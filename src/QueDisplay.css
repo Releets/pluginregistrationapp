@@ -1,0 +1,47 @@
+.userBox{
+    background-color: rgb(14, 117, 100);
+    width: 7vw;
+    height: 7vw;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    line-height: 5em;
+    padding: 0.5em;
+    margin: 1em;
+    border-radius: 50%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    font-size: 1vw;
+}
+.userBox:hover{
+    background-color: rgba(255, 0, 0, 0.3);
+    border: 5px solid rgba(255, 0, 0, 0.6);
+    cursor: pointer;
+}
+.queue{
+    display: inline-flex;
+    justify-content: center;
+    position: relative;
+    padding: 20px;
+    background-color: rgb(8, 53, 51);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 5px 10px -2px, rgba(0, 0, 0, 0.3) 0px 2px 6px -2px;
+}
+.firstBox{
+    border: 8px solid rgb(158, 135, 3);
+    animation: hoverUpDown 2s ease-in-out infinite;
+}
+.queEnd{
+    width: 7vw;
+    height: 7vw;
+}
+@keyframes hoverUpDown {
+    0% {
+      transform: translateY(0); 
+    }
+    50% {
+      transform: translateY(-20px); 
+    }
+    100% {
+      transform: translateY(0); 
+    }
+  }
