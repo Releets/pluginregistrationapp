@@ -16,7 +16,7 @@ const DATA_FILE = './data/data.json';
 function initializeDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
     const initialState = {
-      booleanValue: true,
+      isFree: true,
       queue: []
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(initialState, null, 2));
