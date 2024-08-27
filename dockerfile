@@ -15,7 +15,7 @@ RUN npm install
 VOLUME . src/data
 
 # PORTS
-EXPOSE 3001
+EXPOSE 3000
 
 # Start the app
-ENTRYPOINT npm start
+ENTRYPOINT [ "npm", "start" ]
