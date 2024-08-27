@@ -12,7 +12,9 @@ import { useState, useRef, useEffect } from 'react';
 const adr = 'https://pluginreg-api.kallerud.no';
 axios.defaults.baseURL = adr;
 
-const socket = io(adr);
+const socket = io(adr, {
+      transports: ['websocket'],
+    });
 
 function App() {
 
