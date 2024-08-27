@@ -22,11 +22,20 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push client
         uses: docker/build-push-action@v3
         with:
-          context: .
-          file: ./dockerfile
+          context: ./client
+          file: ./client/dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp
+          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client
+
+      - name: Build and push server
+        uses: docker/build-push-action@v3
+        with:
+          context: ./server
+          file: ./server/dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-server
