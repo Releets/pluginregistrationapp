@@ -1,39 +1,60 @@
+const fs = require('fs')
+
 const express = require('express');
-const e = express();
-const http = require('http').Server(e);
+const app = express();
+
+const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
 const cors = require('cors');
-const corsOptions ={
-    origin:'http://localhost:3000', 
-    credentials:true,
-    optionSuccessStatus:200
+
+app.use(cors());
+app.use(express.json());
+app.options('*', cors()); // Enable pre-flight across-the-board
+const DATA_FILE = './data.json';
+
+function loadData() {
+  try {
+    const rawData = fs.readFileSync(DATA_FILE);
+    console.log(JSON.parse(rawData))
+    return JSON.parse(rawData);
+  } catch (err) {
+    console.error('Error reading data file:', err.message);
+    return {
+      isFree: false,
+      queue: []
+    };
+  }
 }
-e.use(cors(corsOptions));
 
-let state = {
-  isFree: true, 
-  queue: [] 
-};
+function saveData(data) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error('Error saving data file:', err.message);
+  }
+}
 
-e.use(express.json());
+let state = loadData();
 
 // API to get the current state (isFree and queue)
-e.get('/data', (req, res) => {
+app.get('/data', (req, res) => {
   res.json(state);
 });
 
 // API to update availability state
-e.post('/isFree', (req, res) => {
+app.post('/isFree', (req, res) => {
   state.isFree = req.body.value; 
   io.emit('stateUpdate', state); // Broadcast the updated state to all clients
+  saveData(state);
   res.sendStatus(200);
 });
 
 // API to update the queue
-e.post('/queue', (req, res) => {
-  state.queue = req.body.queue; 
+app.post('/queue', (req, res) => {
+  state.queue = req.body.value; 
   io.emit('stateUpdate', state); // Broadcast the updated state to all clients
+  saveData(state);
   res.sendStatus(200);
 });
 

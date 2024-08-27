@@ -38,12 +38,12 @@ function App() {
     };
   }, []);
 
-  const passIsFreeToBackend = () => {
-    axios.post(adr+'/isFree', { value: isFree });
+  const passIsFreeToBackend = (e) => {
+    axios.post(adr+'/isFree', { value: e });
   };
 
-  const passQueueToBackend = () => {
-    axios.post(adr+'/queue', { value: que });
+  const passQueueToBackend = (e) => {
+    axios.post(adr+'/queue', { value: e });
   };
 
   const inputRef = useRef()
@@ -61,11 +61,12 @@ function App() {
 
     inputRef.current.placeholder = "Dine initialer"
     inputRef.current.className = "textinput"
+
     setQue( [...que, inputRef.current.value] )
     setIsFree(false)
 
-    passIsFreeToBackend()
-    passQueueToBackend()
+    passIsFreeToBackend(false)
+    passQueueToBackend([...que, inputRef.current.value])
 
     inputRef.current.value = ""; 
   }
@@ -74,12 +75,21 @@ function App() {
     let arr = [...que];
     arr.splice(index, 1)
     setQue(arr)
+    let queIsEmpty = false
     if (arr.length === 0){
-      setIsFree(true)
+      queIsEmpty = true
     }
-    passIsFreeToBackend()
-    passQueueToBackend()
+    setIsFree(queIsEmpty)
+    
+    passIsFreeToBackend(queIsEmpty)
+    passQueueToBackend(arr)
   }
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && inputRef.current.value != "") {
+      enterQue();
+    }
+  };
 
   return (
     <div className="App">
@@ -94,7 +104,7 @@ function App() {
           <QueDisplay items={que} leaveQueFunction={leaveQue}/>
       </div>}
       <div className='queForm'>
-        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef}></input>
+        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef} onKeyPress={handleKeyPress}></input>
         <br></br>
         <button className='button' onClick={enterQue}>{isFree ? "Overta" : "Gå i kø"}</button>
         <br></br>
