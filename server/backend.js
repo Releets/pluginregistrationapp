@@ -13,6 +13,17 @@ app.use(express.json());
 app.options('*', cors()); // Enable pre-flight across-the-board
 const DATA_FILE = './data/data.json';
 
+function initializeDataFile() {
+  if (!fs.existsSync(DATA_FILE)) {
+    const initialState = {
+      booleanValue: true,
+      queue: []
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(initialState, null, 2));
+    console.log('Data file created successfully.');
+  }
+}
+
 function loadData() {
   try {
     const rawData = fs.readFileSync(DATA_FILE);
@@ -35,6 +46,7 @@ function saveData(data) {
   }
 }
 
+initializeDataFile();
 let state = loadData();
 
 // API to get the current state (isFree and queue)
