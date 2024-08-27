@@ -1,6 +1,4 @@
 {
-  "isFree": false,
-  "queue": [
-    "dddd"
-  ]
+  "isFree": true,
+  "queue": []
 }
