@@ -5,7 +5,8 @@ on:
   push:
     branches:
       - main
-
+    paths:
+      - server/**
 jobs:
   docker:
     runs-on: ubuntu-latest
