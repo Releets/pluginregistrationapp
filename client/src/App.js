@@ -8,8 +8,8 @@ import QueDisplay from './QueDisplay';
 import './App.css';
 import { useState, useRef, useEffect } from 'react';
 
-const adr = 'http://localhost:3001'
-const socket = io(adr); //backend port
+const adr = 'https://pluginreg-api.kallerud.no';
+const socket = io(adr);
 
 function App() {
 
