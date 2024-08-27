@@ -8,7 +8,10 @@ import QueDisplay from './QueDisplay';
 import './App.css';
 import { useState, useRef, useEffect } from 'react';
 
+
 const adr = 'https://pluginreg-api.kallerud.no';
+axios.defaults.baseURL = adr;
+
 const socket = io(adr);
 
 function App() {
@@ -21,7 +24,7 @@ function App() {
 
   useEffect(() => {
     // Fetch initial data from the backend
-    axios.get(adr+'/data')
+    axios.get('/data')
       .then(response => {
         setIsFree(response.data.isFree);
         setQue(response.data.queue);
