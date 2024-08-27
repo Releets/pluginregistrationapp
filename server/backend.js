@@ -11,7 +11,7 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 app.options('*', cors()); // Enable pre-flight across-the-board
-const DATA_FILE = './data.json';
+const DATA_FILE = './data/data.json';
 
 function loadData() {
   try {

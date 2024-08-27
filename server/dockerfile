@@ -1,0 +1,21 @@
+FROM node:22-alpine
+
+# Set the working directory
+WORKDIR /opt/pluginregistrationapp
+
+# Copy the app to the container
+COPY data data/
+COPY backend.js .
+COPY package.json .
+
+# Install dependencies
+RUN npm install
+
+# Define data volume
+VOLUME [ "/opt/pluginregistrationapp/data" ]
+
+# PORTS
+EXPOSE 3001
+
+# Start the app
+CMD [ "node", "backend.js" ]
