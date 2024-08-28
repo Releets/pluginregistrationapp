@@ -72,7 +72,14 @@ function App() {
     inputRef.current.placeholder = "Dine initialer"
     inputRef.current.className = "textinput"
 
+    var currentdate = new Date(); 
+    var formattedTime = currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + "(" 
+                + currentdate.toLocaleString('default', { month: 'long' }) + " "
+                + currentdate.getDay();
+
     setQue( [...que, inputRef.current.value] )
+    console.log("Adding " + inputRef.current.value + "to queue")
     setIsFree(false)
 
     passIsFreeToBackend(false)
@@ -83,8 +90,10 @@ function App() {
 
   function leaveQue(index){
     let arr = [...que];
+    console.log("Dropping " + arr[index] + "from queue")
     arr.splice(index, 1)
     setQue(arr)
+    console.log("New queue: "+arr)
     let queIsEmpty = false
     if (arr.length === 0){
       queIsEmpty = true
