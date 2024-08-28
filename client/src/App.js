@@ -4,6 +4,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 import QueDisplay from './QueDisplay';
+import ExitModal from './ExitModal';
 
 import './App.css';
 import { useState, useRef, useEffect } from 'react';
@@ -23,6 +24,10 @@ function App() {
   const [que, setQue] = useState([]);
 
   const [isFree, setIsFree] = useState(true);
+
+  const [displayModal, setDisplayModal] = useState(false)
+
+  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0);
 
   useEffect(() => {
     // Fetch initial data from the backend
@@ -90,6 +95,18 @@ function App() {
     passQueueToBackend(arr)
   }
 
+function displayExitModal(index){
+  setCurrentModalUserIndex(index);
+  setDisplayModal(true);
+}
+
+function closeExitModal(userDidConfirm){
+  if(userDidConfirm){
+    leaveQue(currentModalUserIndex)
+  }
+  setDisplayModal(false);
+}
+
   const handleKeyPress = (event) => {
     if (event.key === 'Enter' && inputRef.current.value != "") {
       enterQue();
@@ -106,15 +123,17 @@ function App() {
       </div>
       {isFree ? "" :
       <div className='queContainer'>
-          <QueDisplay items={que} leaveQueFunction={leaveQue}/>
+          <QueDisplay items={que} leaveQueFunction={displayExitModal}/>
       </div>}
       <div className='queForm'>
-        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef} onKeyPress={handleKeyPress}></input>
+        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef} onKeyUp={handleKeyPress}></input>
         <br></br>
         <button className='button' onClick={enterQue}>{isFree ? "Overta" : "Gå i kø"}</button>
         <br></br>
         {isFree ? "" : <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>}
       </div>
+      {!displayModal ? "" : 
+        <ExitModal displayItem={que[currentModalUserIndex]} closeModalFunction = {closeExitModal}/>}
     </div>
   );
 }
