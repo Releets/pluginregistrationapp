@@ -12,6 +12,8 @@
     box-sizing: border-box;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     font-size: 1vw;
+    font-family: Lato, sans-serif;
+   
 }
 .userBox:hover{
     background-color: rgba(255, 0, 0, 0.3);
