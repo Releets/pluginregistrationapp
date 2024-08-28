@@ -102,7 +102,7 @@ function displayExitModal(index){
 
 function closeExitModal(userDidConfirm){
   if(userDidConfirm){
-    leaveQue(currentModalItemIndex)
+    leaveQue(currentModalUserIndex)
   }
   setDisplayModal(false);
 }
