@@ -72,6 +72,12 @@ function App() {
     inputRef.current.placeholder = "Dine initialer"
     inputRef.current.className = "textinput"
 
+    var currentdate = new Date(); 
+    var formattedTime = currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + "(" 
+                + currentdate.toLocaleString('default', { month: 'long' }) + " "
+                + currentdate.getDay();
+
     setQue( [...que, inputRef.current.value] )
     setIsFree(false)
 
