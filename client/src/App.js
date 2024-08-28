@@ -79,6 +79,7 @@ function App() {
                 + currentdate.getDay();
 
     setQue( [...que, inputRef.current.value] )
+    console.log("Adding " + inputRef.current.value + "to queue")
     setIsFree(false)
 
     passIsFreeToBackend(false)
@@ -89,8 +90,10 @@ function App() {
 
   function leaveQue(index){
     let arr = [...que];
+    console.log("Dropping " + arr[index] + "from queue")
     arr.splice(index, 1)
     setQue(arr)
+    console.log("New queue: "+arr)
     let queIsEmpty = false
     if (arr.length === 0){
       queIsEmpty = true
