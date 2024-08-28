@@ -11,7 +11,7 @@
     font-size: 150%;
     color: white;
     background-color: #041f1d;
-    padding: 5em;
+    padding: 3em;
     border-radius: 5%;
     top: 50%;   
     left: 50%;
@@ -31,8 +31,10 @@
     height: 2em;
     border: none;
     border-radius: 50%;
+    font-weight: 500;
+    font-size: 0.7em;
     color: white;
-    background-color: #126662;
+    background-color: #073a37;
 }
 .closeButton:hover{
     cursor: pointer;
