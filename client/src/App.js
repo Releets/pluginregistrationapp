@@ -122,7 +122,7 @@ export default function App() {
         ></input>
         <br></br>
         <button className='button' onClick={enterQueue}>
-          {queue.length > 0 ? 'Overta' : 'Gå i kø'}
+          {queue.length == 0 ? 'Overta' : 'Gå i kø'}
         </button>
         <br></br>
         {queue.length > 0 && (
