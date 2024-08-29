@@ -1,12 +1,12 @@
-import { existsSync, writeFileSync, readFileSync } from 'fs'
-
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import express, { json } from 'express'
-const app = express()
-
-const http = require('http').Server(app)
-const io = require('socket.io')(http)
-
+import { Server } from 'socket.io'
+import { createServer } from 'http'
 import cors from 'cors'
+
+const app = express()
+const server = createServer(app)
+const io = new Server(server)
 
 app.use(cors())
 app.use(json())
@@ -78,6 +78,6 @@ io.on('connection', socket => {
   })
 })
 
-http.listen(3001, () => {
+io.listen(3001, () => {
   console.log('Server is running on port 3001')
 })
