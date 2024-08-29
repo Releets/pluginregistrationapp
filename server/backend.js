@@ -32,7 +32,7 @@ function loadData() {
   } catch (err) {
     console.error('Error reading data file:', err.message);
     return {
-      isFree: false,
+      isFree: true,
       queue: []
     };
   }

@@ -74,15 +74,22 @@ function App() {
 
     var currentdate = new Date(); 
     var formattedTime = currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + "(" 
-                + currentdate.toLocaleString('default', { month: 'long' }) + " "
-                + currentdate.getDay();
+                + String(currentdate.getMinutes()).padStart(2, '0') + " | " 
+                + currentdate.getDate() + "/"
+                + String((currentdate.getMonth()+1)).padStart(2, '0');
 
-    setQue( [...que, inputRef.current.value] )
+    let uname = inputRef.current.value;
+
+    let newElem = {
+      "username" : uname,
+      "entrytime" : formattedTime
+    }
+
+    setQue( [...que, newElem] )
     setIsFree(false)
 
     passIsFreeToBackend(false)
-    passQueueToBackend([...que, inputRef.current.value])
+    passQueueToBackend(newElem)
 
     inputRef.current.value = ""; 
   }
@@ -91,13 +98,10 @@ function App() {
     let arr = [...que];
     arr.splice(index, 1)
     setQue(arr)
-    let queIsEmpty = false
-    if (arr.length === 0){
-      queIsEmpty = true
-    }
-    setIsFree(queIsEmpty)
+
+    setIsFree(arr.length === 0)
     
-    passIsFreeToBackend(queIsEmpty)
+    passIsFreeToBackend(arr.length === 0)
     passQueueToBackend(arr)
   }
 
@@ -139,7 +143,7 @@ function closeExitModal(userDidConfirm){
         {isFree ? "" : <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>}
       </div>
       {!displayModal ? "" : 
-        <ExitModal displayItem={que[currentModalUserIndex]} closeModalFunction = {closeExitModal}/>}
+        <ExitModal displayItem={que[currentModalUserIndex]["username"]} closeModalFunction = {closeExitModal}/>}
     </div>
   );
 }

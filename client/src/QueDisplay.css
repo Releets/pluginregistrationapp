@@ -36,6 +36,10 @@
     width: 7vw;
     height: 7vw;
 }
+.entryTimeContainer{
+  color: white;
+  font-size: 80%;
+}
 @keyframes hoverUpDown {
     0% {
       transform: translateY(0); 
