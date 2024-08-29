@@ -1,83 +1,84 @@
-const fs = require('fs')
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import express, { json } from 'express'
+import { Server } from 'socket.io'
+import { createServer } from 'http'
+import cors from 'cors'
 
-const express = require('express');
-const app = express();
+const app = express()
+const server = createServer(app)
+const io = new Server(server)
 
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const port = 6969
+if (!port) throw new Error('SERVER_PORT environment variable not set')
 
-const cors = require('cors');
+app.use(cors())
+app.use(json())
+app.options('*', cors()) // Enable pre-flight across-the-board
+const DATA_FILE = './data/data.json'
 
-app.use(cors());
-app.use(express.json());
-app.options('*', cors()); // Enable pre-flight across-the-board
-const DATA_FILE = './data/data.json';
+const timestamp = () => new Date().toISOString()
 
-function initializeDataFile() {
-  if (!fs.existsSync(DATA_FILE)) {
-    const initialState = {
-      isFree: true,
-      queue: []
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initialState, null, 2));
-    console.log('Data file created successfully.');
-  }
-}
-
-function loadData() {
+function getData() {
   try {
-    const rawData = fs.readFileSync(DATA_FILE);
-    console.log(JSON.parse(rawData))
-    return JSON.parse(rawData);
+    const rawData = readFileSync(DATA_FILE)
+    console.log(timestamp(), 'Read data file', JSON.parse(rawData))
+    return JSON.parse(rawData)
   } catch (err) {
-    console.error('Error reading data file:', err.message);
-    return {
-      isFree: true,
-      queue: []
-    };
+    console.log(timestamp(), 'Initializing data file')
+    mkdirSync('./data')
+    writeFileSync(DATA_FILE, JSON.stringify([]))
+    return []
   }
 }
 
-function saveData(data) {
+function addToQueue(user) {
+  const data = getData()
+  if (data.includes(user)) throw new Error('user already in queue')
+  data.push(user)
+  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+  console.log(timestamp(), 'Added ' + user + ' to queue')
+  return data
+}
+
+function removeFromQueue(toRemove) {
+  const data = getData().filter(entry => toRemove.username !== entry.username)
+  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+  console.log(timestamp(), 'Removed ' + toRemove.username + ' from queue')
+  return data
+}
+
+// API to append the queue
+app.post('/add', (req, res) => {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    const updatedQueue = addToQueue(req.body.value)
+    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    res.sendStatus(200)
   } catch (err) {
-    console.error('Error saving data file:', err.message);
+    console.error(timestamp(), 'Error adding to queue:', err.message)
+    res.status(500).send(err.message)
   }
-}
+})
 
-initializeDataFile();
-let state = loadData();
+// API to remove from the queue
+app.post('/remove', (req, res) => {
+  try {
+    const updatedQueue = removeFromQueue(req.body.value)
+    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    res.sendStatus(200)
+  } catch (err) {
+    console.error(timestamp(), 'Error removing from queue:', err.message)
+    res.status(500).send(err.message)
+  }
+})
 
-// API to get the current state (isFree and queue)
-app.get('/data', (req, res) => {
-  res.json(state);
-});
-
-// API to update availability state
-app.post('/isFree', (req, res) => {
-  state.isFree = req.body.value; 
-  io.emit('stateUpdate', state); // Broadcast the updated state to all clients
-  saveData(state);
-  res.sendStatus(200);
-});
-
-// API to update the queue
-app.post('/queue', (req, res) => {
-  state.queue = req.body.value; 
-  io.emit('stateUpdate', state); // Broadcast the updated state to all clients
-  saveData(state);
-  res.sendStatus(200);
-});
-
-io.on('connection', (socket) => {
-  console.log('A user connected');
-  socket.emit('stateUpdate', state); // Send the current state to newly connected client
+io.on('connection', socket => {
+  console.log(timestamp(), 'Connected', socket.id)
+  socket.emit('stateUpdate', getData()) // Send the current state to newly connected client
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
-  });
-});
+    console.log(timestamp(), 'Disconnected', socket.id)
+  })
+})
 
-http.listen(3001, () => {
-  console.log('Server is running on port 3001');
-});
+server.listen(port, () => {
+  console.log(timestamp(), 'Server is running on port', port)
+})

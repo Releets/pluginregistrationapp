@@ -15,7 +15,7 @@ RUN npm install
 VOLUME [ "/opt/pluginregistrationapp/data" ]
 
 # PORTS
-EXPOSE 3001
+EXPOSE 6969
 
 # Start the app
 CMD [ "node", "backend.js" ]

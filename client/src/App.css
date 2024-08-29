@@ -26,12 +26,12 @@ body{
   margin-bottom: 2em;
 }
 
-.queForm{
+.queueForm{
   margin-top: auto;
   padding-bottom: 20px;
 }
 
-.queContainer{
+.queueContainer{
   flex: 1;
   margin-bottom: 2em;
 }

@@ -1,155 +1,137 @@
-import check from './check.svg';
-import cross from './cross.svg';
-import axios from 'axios';
-import io from 'socket.io-client';
+import axios from 'axios'
+import io from 'socket.io-client'
+import check from './check.svg'
+import cross from './cross.svg'
 
-import QueDisplay from './QueDisplay';
-import ExitModal from './ExitModal';
+import ExitModal from './ExitModal'
+import QueueDisplay from './QueueDisplay'
 
-import './App.css';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react'
+import './App.css'
 
+const adr = 'https://pluginreg-api.kallerud.no'
+if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
 
-const adr = 'https://pluginreg-api.kallerud.no';
-axios.defaults.baseURL = adr;
+const timestamp = () => new Date().toISOString()
 
+console.log(timestamp(), 'Connecting to server at', adr)
+axios.defaults.baseURL = adr
 const socket = io(adr, {
-      transports: ['websocket'],
-    });
+  transports: ['websocket'],
+})
 
-function App() {
-
-  document.title = "Plugin Registration Kø"
-
-  const [que, setQue] = useState([]);
-
-  const [isFree, setIsFree] = useState(true);
-
+export default function App() {
+  const [queue, setQueue] = useState([])
   const [displayModal, setDisplayModal] = useState(false)
-
-  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0);
+  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
 
   useEffect(() => {
-    // Fetch initial data from the backend
-    axios.get('/data')
-      .then(response => {
-        setIsFree(response.data.isFree);
-        setQue(response.data.queue);
-      });
-
     // Listen for updates from the backend
-    socket.on('dataUpdate', (data) => {
-      setIsFree(data.isFree);
-      setQue(data.queue);
-    });
+    socket.on('stateUpdate', data => {
+      console.log(timestamp(), 'Recieved update from backend:', data)
+      setQueue(data)
+    })
 
     return () => {
-      socket.off('dataUpdate');
-    };
-  }, []);
+      socket.off('stateUpdate')
+    }
+  }, [])
 
-  const passIsFreeToBackend = (e) => {
-    axios.post(adr+'/isFree', { value: e });
-  };
+  const addToQueue = user => {
+    console.log(timestamp(), 'Adding ' + user + ' to queue')
+    axios.post(adr + '/add', { value: user }).catch(err => {
+      // TODO: Display error message to user
+      console.error(timestamp(), 'Error adding to queue:', err.message)
+    })
+  }
 
-  const passQueueToBackend = (e) => {
-    axios.post(adr+'/queue', { value: e });
-  };
+  const removeFromQueue = user => {
+    console.log(timestamp(), 'Removing ' + user + ' from queue')
+    axios.post(adr + '/remove', { value: user })
+  }
 
   const inputRef = useRef()
 
-  function enterQue (){
-    if(inputRef.current.value === ""){
+  function enterQueue() {
+    if (inputRef.current.value === '') {
+      return
+    } else if (inputRef.current.value.length > 7) {
+      inputRef.current.value = ''
+      inputRef.current.placeholder = 'For mange tegn!'
+      inputRef.current.className = 'textinput wronginput'
       return
     }
-    else if(inputRef.current.value.length > 7){
-      inputRef.current.value = ""
-      inputRef.current.placeholder = "For mange tegn!"
-      inputRef.current.className = "textinput wronginput"
-      return
+
+    inputRef.current.placeholder = 'Dine initialer'
+    inputRef.current.className = 'textinput'
+
+    let entry = {
+      username: inputRef.current.value,
+      entrytime: Date.now(),
     }
 
-    inputRef.current.placeholder = "Dine initialer"
-    inputRef.current.className = "textinput"
+    addToQueue(entry)
 
-    var currentdate = new Date(); 
-    var formattedTime = currentdate.getHours() + ":"  
-                + String(currentdate.getMinutes()).padStart(2, '0') + " | " 
-                + currentdate.getDate() + "/"
-                + String((currentdate.getMonth()+1)).padStart(2, '0');
+    inputRef.current.value = ''
+  }
 
-    let uname = inputRef.current.value;
+  function leaveQueue(index) {
+    removeFromQueue(queue[index])
+  }
 
-    let newElem = {
-      "username" : uname,
-      "entrytime" : formattedTime
+  function displayExitModal(index) {
+    setCurrentModalUserIndex(index)
+    setDisplayModal(true)
+  }
+
+  function closeExitModal(userDidConfirm) {
+    if (userDidConfirm) {
+      leaveQueue(currentModalUserIndex)
     }
-    console.log("Adding " + uname + "to queue")
-    setQue( [...que, newElem] )
-
-    setIsFree(false)
-
-    passIsFreeToBackend(false)
-    passQueueToBackend(newElem)
-
-    inputRef.current.value = ""; 
+    setDisplayModal(false)
   }
 
-  function leaveQue(index){
-    let arr = [...que];
-    console.log("Dropping " + arr[index] + "from queue")
-    arr.splice(index, 1)
-    setQue(arr)
-    
-    console.log("New queue: "+arr)
-    setIsFree(arr.length === 0)
-
-    
-    passIsFreeToBackend(arr.length === 0)
-    passQueueToBackend(arr)
-  }
-
-function displayExitModal(index){
-  setCurrentModalUserIndex(index);
-  setDisplayModal(true);
-}
-
-function closeExitModal(userDidConfirm){
-  if(userDidConfirm){
-    leaveQue(currentModalUserIndex)
-  }
-  setDisplayModal(false);
-}
-
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && inputRef.current.value != "") {
-      enterQue();
+  const handleKeyPress = event => {
+    if (event.key === 'Enter' && inputRef.current.value !== '') {
+      enterQueue()
     }
-  };
+  }
 
   return (
-    <div className="App">
-      <div className='banner'>
-        Er Plugin Registration ledig?
-      </div>
+    <div className='App'>
+      <div className='banner'>Er Plugin Registration ledig?</div>
       <div className='availabilityIcon'>
-        <img className = 'icon' src={isFree ? check : cross}></img>
+        <img
+          className='icon'
+          src={queue.length === 0 ? check : cross}
+          alt={queue.length === 0 ? 'Available' : 'Unavailable'}
+        ></img>
       </div>
-      {isFree ? "" :
-      <div className='queContainer'>
-          <QueDisplay items={que} leaveQueFunction={displayExitModal}/>
-      </div>}
-      <div className='queForm'>
-        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef} onKeyUp={handleKeyPress}></input>
+      {queue.length > 0 && (
+        <div className='queueContainer'>
+          <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+        </div>
+      )}
+      <div className='queueForm'>
+        <input
+          type='text'
+          placeholder='Dine initialer'
+          className='textinput'
+          ref={inputRef}
+          onKeyUp={handleKeyPress}
+        ></input>
         <br></br>
-        <button className='button' onClick={enterQue}>{isFree ? "Overta" : "Gå i kø"}</button>
+        <button className='button' onClick={enterQueue}>
+          {queue.length > 0 ? 'Overta' : 'Gå i kø'}
+        </button>
         <br></br>
-        {isFree ? "" : <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>}
+        {queue.length > 0 && (
+          <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
+        )}
       </div>
-      {!displayModal ? "" : 
-        <ExitModal displayItem={que[currentModalUserIndex]["username"]} closeModalFunction = {closeExitModal}/>}
+      {displayModal && (
+        <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
+      )}
     </div>
-  );
+  )
 }
-
-export default App;
