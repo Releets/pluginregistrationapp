@@ -9,7 +9,8 @@ import QueueDisplay from './QueueDisplay'
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
-const adr = 'https://pluginreg-api.kallerud.no'
+// const adr = 'https://pluginreg-api.kallerud.no'
+const adr = 'http://localhost:6969'
 if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
 
 const timestamp = () => new Date().toISOString()
@@ -67,7 +68,7 @@ export default function App() {
 
     let entry = {
       username: inputRef.current.value,
-      entrytime: formattedTime,
+      entrytime: Date.now(),
     }
 
     addToQueue(entry)

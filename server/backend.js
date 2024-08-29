@@ -40,12 +40,10 @@ function addToQueue(user) {
   return data
 }
 
-function removeFromQueue(user) {
-  const data = getData()
-  if (!data.includes(user)) throw new Error('user not in queue')
-  data.splice(data.indexOf(user), 1)
+function removeFromQueue(toRemove) {
+  const data = getData().filter(entry => toRemove.username !== entry.username)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log(timestamp(), 'Removed ' + user + ' from queue')
+  console.log(timestamp(), 'Removed ' + toRemove.username + ' from queue')
   return data
 }
 
