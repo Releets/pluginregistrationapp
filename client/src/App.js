@@ -43,10 +43,12 @@ export default function App() {
   }, [])
 
   const passIsFreeToBackend = e => {
+    console.log('Sending isFree to backend:', e)
     axios.post(adr + '/isFree', { value: e })
   }
 
   const passQueueToBackend = e => {
+    console.log('Sending queue to backend:', e)
     axios.post(adr + '/queue', { value: e })
   }
 
@@ -66,7 +68,7 @@ export default function App() {
     inputRef.current.className = 'textinput'
 
     setQueue([...queue, inputRef.current.value])
-    console.log(getFormattedTime(), 'Adding ' + inputRef.current.value + 'to queue')
+    console.log(new Date().toISOString(), 'Adding ' + inputRef.current.value + 'to queue')
     setIsFree(false)
 
     passIsFreeToBackend(false)
@@ -77,10 +79,10 @@ export default function App() {
 
   function leaveQueue(index) {
     let arr = [...queue]
-    console.log(getFormattedTime(), 'Dropping ' + arr[index] + 'from queue')
+    console.log(new Date().toISOString(), 'Dropping ' + arr[index] + 'from queue')
     arr.splice(index, 1)
     setQueue(arr)
-    console.log(getFormattedTime(), 'New queue: ' + arr)
+    console.log(new Date().toISOString(), 'New queue: ' + arr)
     let queueIsEmpty = false
     if (arr.length === 0) {
       queueIsEmpty = true
@@ -101,18 +103,6 @@ export default function App() {
       leaveQueue(currentModalUserIndex)
     }
     setDisplayModal(false)
-  }
-
-  function getFormattedTime(date = new Date()) {
-    return (
-      date.getHours() +
-      ':' +
-      date.getMinutes() +
-      '(' +
-      date.toLocaleString('default', { month: 'long' }) +
-      ' ' +
-      date.getDay()
-    )
   }
 
   const handleKeyPress = event => {
