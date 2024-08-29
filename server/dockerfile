@@ -14,8 +14,11 @@ RUN npm install
 # Define data volume
 VOLUME [ "/opt/pluginregistrationapp/data" ]
 
+# Environment variables
+ENV SERVER_PORT 6969
+
 # PORTS
-EXPOSE 3001
+EXPOSE 6969
 
 # Start the app
 CMD [ "node", "backend.js" ]

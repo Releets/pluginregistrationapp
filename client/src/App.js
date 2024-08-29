@@ -9,7 +9,11 @@ import QueueDisplay from './QueueDisplay'
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
-const adr = 'https://pluginreg-api.kallerud.no'
+const adr = process.env.REACT_APP_SERVER_URL
+if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
+
+console.log('Connecting to server at', adr)
+
 axios.defaults.baseURL = adr
 
 const socket = io(adr, {

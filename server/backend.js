@@ -8,6 +8,9 @@ const app = express()
 const server = createServer(app)
 const io = new Server(server)
 
+const port = process.env.SERVER_PORT
+if (!port) throw new Error('SERVER_PORT environment variable not set')
+
 app.use(cors())
 app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
@@ -78,6 +81,6 @@ io.on('connection', socket => {
   })
 })
 
-io.listen(3001, () => {
-  console.log('Server is running on port 3001')
+server.listen(port, () => {
+  console.log('Server is running on port', port)
 })

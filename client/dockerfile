@@ -7,10 +7,12 @@ WORKDIR /opt/pluginregistrationapp
 COPY public public/
 COPY src src/
 COPY package.json .
-COPY .env .
 
 # Install dependencies
 RUN npm install
+
+# Environment variables
+ENV REACT_APP_SERVER_URL https://pluginreg-api.kallerud.no/
 
 # PORTS
 EXPOSE 3000
