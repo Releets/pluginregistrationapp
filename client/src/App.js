@@ -1,150 +1,166 @@
-import check from './check.svg';
-import cross from './cross.svg';
-import axios from 'axios';
-import io from 'socket.io-client';
+import axios from 'axios'
+import io from 'socket.io-client'
+import check from './check.svg'
+import cross from './cross.svg'
 
-import QueDisplay from './QueDisplay';
-import ExitModal from './ExitModal';
+import ExitModal from './ExitModal'
+import QueDisplay from './QueDisplay'
 
-import './App.css';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react'
+import './App.css'
 
-
-const adr = 'https://pluginreg-api.kallerud.no';
-axios.defaults.baseURL = adr;
+const adr = 'https://pluginreg-api.kallerud.no'
+axios.defaults.baseURL = adr
 
 const socket = io(adr, {
-      transports: ['websocket'],
-    });
+  transports: ['websocket'],
+})
 
-function App() {
+export default function App() {
+  document.title = 'Plugin Registration Kø'
 
-  document.title = "Plugin Registration Kø"
+  const [queue, setQueue] = useState([])
 
-  const [que, setQue] = useState([]);
-
-  const [isFree, setIsFree] = useState(true);
+  const [isFree, setIsFree] = useState(true)
 
   const [displayModal, setDisplayModal] = useState(false)
 
-  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0);
+  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
 
   useEffect(() => {
     // Fetch initial data from the backend
-    axios.get('/data')
-      .then(response => {
-        setIsFree(response.data.isFree);
-        setQue(response.data.queue);
-      });
+    axios.get('/data').then(response => {
+      setIsFree(response.data.isFree)
+      setQueue(response.data.queue)
+    })
 
     // Listen for updates from the backend
-    socket.on('dataUpdate', (data) => {
-      setIsFree(data.isFree);
-      setQue(data.queue);
-    });
+    socket.on('dataUpdate', data => {
+      setIsFree(data.isFree)
+      setQueue(data.queue)
+    })
 
     return () => {
-      socket.off('dataUpdate');
-    };
-  }, []);
+      socket.off('dataUpdate')
+    }
+  }, [])
 
-  const passIsFreeToBackend = (e) => {
-    axios.post(adr+'/isFree', { value: e });
-  };
+  const passIsFreeToBackend = e => {
+    axios.post(adr + '/isFree', { value: e })
+  }
 
-  const passQueueToBackend = (e) => {
-    axios.post(adr+'/queue', { value: e });
-  };
+  const passQueueToBackend = e => {
+    axios.post(adr + '/queue', { value: e })
+  }
 
   const inputRef = useRef()
 
-  function enterQue (){
-    if(inputRef.current.value === ""){
+  function enterQueue() {
+    if (inputRef.current.value === '') {
+      return
+    } else if (inputRef.current.value.length > 7) {
+      inputRef.current.value = ''
+      inputRef.current.placeholder = 'For mange tegn!'
+      inputRef.current.className = 'textinput wronginput'
       return
     }
-    else if(inputRef.current.value.length > 7){
-      inputRef.current.value = ""
-      inputRef.current.placeholder = "For mange tegn!"
-      inputRef.current.className = "textinput wronginput"
-      return
-    }
 
-    inputRef.current.placeholder = "Dine initialer"
-    inputRef.current.className = "textinput"
+    inputRef.current.placeholder = 'Dine initialer'
+    inputRef.current.className = 'textinput'
 
-    var currentdate = new Date(); 
-    var formattedTime = currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + "(" 
-                + currentdate.toLocaleString('default', { month: 'long' }) + " "
-                + currentdate.getDay();
-
-    setQue( [...que, inputRef.current.value] )
-    console.log("Adding " + inputRef.current.value + "to queue")
+    setQueue([...queue, inputRef.current.value])
+    console.log(getFormattedTime(), 'Adding ' + inputRef.current.value + 'to queue')
     setIsFree(false)
 
     passIsFreeToBackend(false)
-    passQueueToBackend([...que, inputRef.current.value])
+    passQueueToBackend([...queue, inputRef.current.value])
 
-    inputRef.current.value = ""; 
+    inputRef.current.value = ''
   }
 
-  function leaveQue(index){
-    let arr = [...que];
-    console.log("Dropping " + arr[index] + "from queue")
+  function leaveQueue(index) {
+    let arr = [...queue]
+    console.log(getFormattedTime(), 'Dropping ' + arr[index] + 'from queue')
     arr.splice(index, 1)
-    setQue(arr)
-    console.log("New queue: "+arr)
+    setQueue(arr)
+    console.log(getFormattedTime(), 'New queue: ' + arr)
     let queIsEmpty = false
-    if (arr.length === 0){
+    if (arr.length === 0) {
       queIsEmpty = true
     }
     setIsFree(queIsEmpty)
-    
+
     passIsFreeToBackend(queIsEmpty)
     passQueueToBackend(arr)
   }
 
-function displayExitModal(index){
-  setCurrentModalUserIndex(index);
-  setDisplayModal(true);
-}
-
-function closeExitModal(userDidConfirm){
-  if(userDidConfirm){
-    leaveQue(currentModalUserIndex)
+  function displayExitModal(index) {
+    setCurrentModalUserIndex(index)
+    setDisplayModal(true)
   }
-  setDisplayModal(false);
-}
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && inputRef.current.value != "") {
-      enterQue();
+  function closeExitModal(userDidConfirm) {
+    if (userDidConfirm) {
+      leaveQueue(currentModalUserIndex)
     }
-  };
+    setDisplayModal(false)
+  }
+
+  function getFormattedTime(date = new Date()) {
+    return (
+      date.getHours() +
+      ':' +
+      date.getMinutes() +
+      '(' +
+      date.toLocaleString('default', { month: 'long' }) +
+      ' ' +
+      date.getDay()
+    )
+  }
+
+  const handleKeyPress = event => {
+    if (event.key === 'Enter' && inputRef.current.value != '') {
+      enterQueue()
+    }
+  }
 
   return (
-    <div className="App">
-      <div className='banner'>
-        Er Plugin Registration ledig?
-      </div>
+    <div className='App'>
+      <div className='banner'>Er Plugin Registration ledig?</div>
       <div className='availabilityIcon'>
-        <img className = 'icon' src={isFree ? check : cross}></img>
+        <img className='icon' src={isFree ? check : cross} alt={isFree ? 'Available' : 'Unavailable'}></img>
       </div>
-      {isFree ? "" :
-      <div className='queContainer'>
-          <QueDisplay items={que} leaveQueFunction={displayExitModal}/>
-      </div>}
+      {isFree ? (
+        ''
+      ) : (
+        <div className='queContainer'>
+          <QueDisplay items={queue} leaveQueFunction={displayExitModal} />
+        </div>
+      )}
       <div className='queForm'>
-        <input type='text' placeholder='Dine initialer' className='textinput' ref={inputRef} onKeyUp={handleKeyPress}></input>
+        <input
+          type='text'
+          placeholder='Dine initialer'
+          className='textinput'
+          ref={inputRef}
+          onKeyUp={handleKeyPress}
+        ></input>
         <br></br>
-        <button className='button' onClick={enterQue}>{isFree ? "Overta" : "Gå i kø"}</button>
+        <button className='button' onClick={enterQueue}>
+          {isFree ? 'Overta' : 'Gå i kø'}
+        </button>
         <br></br>
-        {isFree ? "" : <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>}
+        {isFree ? (
+          ''
+        ) : (
+          <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
+        )}
       </div>
-      {!displayModal ? "" : 
-        <ExitModal displayItem={que[currentModalUserIndex]} closeModalFunction = {closeExitModal}/>}
+      {!displayModal ? (
+        ''
+      ) : (
+        <ExitModal displayItem={queue[currentModalUserIndex]} closeModalFunction={closeExitModal} />
+      )}
     </div>
-  );
+  )
 }
-
-export default App;
