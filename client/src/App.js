@@ -84,13 +84,13 @@ export default function App() {
     arr.splice(index, 1)
     setQueue(arr)
     console.log(getFormattedTime(), 'New queue: ' + arr)
-    let queIsEmpty = false
+    let queueIsEmpty = false
     if (arr.length === 0) {
-      queIsEmpty = true
+      queueIsEmpty = true
     }
-    setIsFree(queIsEmpty)
+    setIsFree(queueIsEmpty)
 
-    passIsFreeToBackend(queIsEmpty)
+    passIsFreeToBackend(queueIsEmpty)
     passQueueToBackend(arr)
   }
 

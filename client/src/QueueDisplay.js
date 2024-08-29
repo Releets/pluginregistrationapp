@@ -1,8 +1,8 @@
 import './QueueDisplay.css'
 
-function QueueDisplay(props) {
+export default function QueueDisplay(props) {
   function leaveQueue(index) {
-    props.leaveQueFunction(index)
+    props.leaveQueueFunction(index)
   }
 
   return (
@@ -17,5 +17,3 @@ function QueueDisplay(props) {
     </div>
   )
 }
-
-export default QueDisplay
