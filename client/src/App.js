@@ -20,11 +20,8 @@ export default function App() {
   document.title = 'Plugin Registration Kø'
 
   const [queue, setQueue] = useState([])
-
   const [isFree, setIsFree] = useState(true)
-
   const [displayModal, setDisplayModal] = useState(false)
-
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
 
   useEffect(() => {
@@ -119,7 +116,7 @@ export default function App() {
   }
 
   const handleKeyPress = event => {
-    if (event.key === 'Enter' && inputRef.current.value != '') {
+    if (event.key === 'Enter' && inputRef.current.value !== '') {
       enterQueue()
     }
   }
