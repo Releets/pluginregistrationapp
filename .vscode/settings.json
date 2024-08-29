@@ -1,0 +1,10 @@
+{
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "files.exclude": {
+    "*.d.ts": true,
+    "**/coverage": true,
+    "**/node_modules": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
