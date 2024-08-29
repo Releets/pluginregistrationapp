@@ -1,6 +1,6 @@
-import './QueDisplay.css'
+import './QueueDisplay.css'
 
-function QueDisplay(props) {
+function QueueDisplay(props) {
   function leaveQueue(index) {
     props.leaveQueFunction(index)
   }

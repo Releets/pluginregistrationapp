@@ -4,7 +4,7 @@ import check from './check.svg'
 import cross from './cross.svg'
 
 import ExitModal from './ExitModal'
-import QueDisplay from './QueDisplay'
+import QueueDisplay from './QueueDisplay'
 
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
@@ -134,7 +134,7 @@ export default function App() {
         ''
       ) : (
         <div className='queContainer'>
-          <QueDisplay items={queue} leaveQueFunction={displayExitModal} />
+          <QueueDisplay items={queue} leaveQueFunction={displayExitModal} />
         </div>
       )}
       <div className='queForm'>
