@@ -108,9 +108,7 @@ export default function App() {
           alt={queue.length === 0 ? 'Available' : 'Unavailable'}
         ></img>
       </div>
-      {queue.length === 0 ? (
-        ''
-      ) : (
+      {queue.length > 0 && (
         <div className='queueContainer'>
           <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
         </div>
@@ -125,12 +123,10 @@ export default function App() {
         ></input>
         <br></br>
         <button className='button' onClick={enterQueue}>
-          {queue.length === 0 ? 'Overta' : 'Gå i kø'}
+          {queue.length > 0 ? 'Overta' : 'Gå i kø'}
         </button>
         <br></br>
-        {queue.length === 0 ? (
-          ''
-        ) : (
+        {queue.length > 0 && (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
         )}
       </div>
