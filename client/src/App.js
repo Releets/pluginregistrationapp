@@ -12,32 +12,24 @@ import './App.css'
 const adr = 'http://localhost:6969'
 if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
 
-console.log('Connecting to server at', adr)
+const timestamp = () => new Date().toISOString()
 
+console.log(timestamp(), 'Connecting to server at', adr)
 axios.defaults.baseURL = adr
-
 const socket = io(adr, {
   transports: ['websocket'],
 })
 
 export default function App() {
   const [queue, setQueue] = useState([])
-  const [isFree, setIsFree] = useState(true)
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
 
   useEffect(() => {
-    // Fetch initial data from the backend
-    axios.get('/data').then(response => {
-      setIsFree(response.data.isFree)
-      setQueue(response.data.queue)
-    })
-
     // Listen for updates from the backend
     socket.on('stateUpdate', data => {
-      console.log('Socket:', data)
-      setIsFree(data.isFree)
-      setQueue(data.queue)
+      console.log(timestamp(), 'Recieved update from backend:', data)
+      setQueue(data)
     })
 
     return () => {
@@ -45,14 +37,16 @@ export default function App() {
     }
   }, [])
 
-  const passIsFreeToBackend = e => {
-    console.log('Sending isFree to backend:', e)
-    axios.post(adr + '/isFree', { value: e })
+  const addToQueue = user => {
+    console.log(timestamp(), 'Adding ' + user + ' to queue')
+    axios.post(adr + '/add', { value: user }).catch(err => {
+      console.error('Error adding to queue:', err.message)
+    })
   }
 
-  const passQueueToBackend = e => {
-    console.log('Sending queue to backend:', e)
-    axios.post(adr + '/queue', { value: e })
+  const removeFromQueue = user => {
+    console.log(timestamp(), 'Removing ' + user + ' from queue')
+    axios.post(adr + '/remove', { value: user })
   }
 
   const inputRef = useRef()
@@ -70,30 +64,13 @@ export default function App() {
     inputRef.current.placeholder = 'Dine initialer'
     inputRef.current.className = 'textinput'
 
-    setQueue([...queue, inputRef.current.value])
-    console.log(new Date().toISOString(), 'Adding ' + inputRef.current.value + 'to queue')
-    setIsFree(false)
-
-    passIsFreeToBackend(false)
-    passQueueToBackend([...queue, inputRef.current.value])
+    addToQueue(inputRef.current.value)
 
     inputRef.current.value = ''
   }
 
   function leaveQueue(index) {
-    let arr = [...queue]
-    console.log(new Date().toISOString(), 'Dropping ' + arr[index] + 'from queue')
-    arr.splice(index, 1)
-    setQueue(arr)
-    console.log(new Date().toISOString(), 'New queue: ' + arr)
-    let queueIsEmpty = false
-    if (arr.length === 0) {
-      queueIsEmpty = true
-    }
-    setIsFree(queueIsEmpty)
-
-    passIsFreeToBackend(queueIsEmpty)
-    passQueueToBackend(arr)
+    removeFromQueue(queue[index])
   }
 
   function displayExitModal(index) {
@@ -118,9 +95,13 @@ export default function App() {
     <div className='App'>
       <div className='banner'>Er Plugin Registration ledig?</div>
       <div className='availabilityIcon'>
-        <img className='icon' src={isFree ? check : cross} alt={isFree ? 'Available' : 'Unavailable'}></img>
+        <img
+          className='icon'
+          src={queue.length === 0 ? check : cross}
+          alt={queue.length === 0 ? 'Available' : 'Unavailable'}
+        ></img>
       </div>
-      {isFree ? (
+      {queue.length === 0 ? (
         ''
       ) : (
         <div className='queueContainer'>
@@ -137,10 +118,10 @@ export default function App() {
         ></input>
         <br></br>
         <button className='button' onClick={enterQueue}>
-          {isFree ? 'Overta' : 'Gå i kø'}
+          {queue.length === 0 ? 'Overta' : 'Gå i kø'}
         </button>
         <br></br>
-        {isFree ? (
+        {queue.length === 0 ? (
           ''
         ) : (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>

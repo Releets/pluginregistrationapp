@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { mkdir, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import express, { json } from 'express'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
@@ -16,66 +16,64 @@ app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
 const DATA_FILE = './data/data.json'
 
-function initializeDataFile() {
-  if (!existsSync(DATA_FILE)) {
-    const initialState = {
-      isFree: true,
-      queue: [],
-    }
-    writeFileSync(DATA_FILE, JSON.stringify(initialState, null, 2))
-    console.log('Data file created successfully.')
-  }
-}
-
-function loadData() {
+function getData() {
   try {
     const rawData = readFileSync(DATA_FILE)
-    console.log(JSON.parse(rawData))
+    console.log('Read data file', JSON.parse(rawData))
     return JSON.parse(rawData)
   } catch (err) {
-    console.error('Error reading data file:', err.message)
-    return {
-      isFree: false,
-      queue: [],
-    }
+    console.warn('Initializing data file')
+    mkdirSync('./data')
+    writeFileSync(DATA_FILE, JSON.stringify([]))
+    return []
   }
 }
 
-function saveData(data) {
+function addToQueue(initials) {
+  const data = getData()
+  if (data.includes(initials)) throw new Error('Initials already in queue')
+  data.push(initials)
+  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+  console.log('Added %s to queue', initials)
+  return data
+}
+
+function removeFromQueue(initials) {
+  const data = getData()
+  if (!data.includes(initials)) throw new Error('Initials not in queue')
+  data.splice(data.indexOf(initials), 1)
+  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+  console.log('Removed %s from queue', initials)
+  return data
+}
+
+// API to append the queue
+app.post('/add', (req, res) => {
   try {
-    writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
+    const updatedQueue = addToQueue(req.body.value)
+    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    res.sendStatus(200)
   } catch (err) {
-    console.error('Error saving data file:', err.message)
+    console.error('Error adding to queue:', err.message)
+    res.status(500).send(err.message)
   }
-}
-
-initializeDataFile()
-let state = loadData()
-
-// API to get the current state (isFree and queue)
-app.get('/data', (req, res) => {
-  res.json(state)
 })
 
-// API to update availability state
-app.post('/isFree', (req, res) => {
-  state.isFree = req.body.value
-  io.emit('stateUpdate', state) // Broadcast the updated state to all clients
-  saveData(state)
-  res.sendStatus(200)
-})
-
-// API to update the queue
-app.post('/queue', (req, res) => {
-  state.queue = req.body.value
-  io.emit('stateUpdate', state) // Broadcast the updated state to all clients
-  saveData(state)
-  res.sendStatus(200)
+// API to remove from the queue
+app.post('/remove', (req, res) => {
+  try {
+    const updatedQueue = removeFromQueue(req.body.value)
+    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    res.sendStatus(200)
+  } catch (err) {
+    console.error('Error removing from queue:', err.message)
+    res.status(500).send(err.message)
+  }
 })
 
 io.on('connection', socket => {
   console.log('Connected', socket.id)
-  socket.emit('stateUpdate', state) // Send the current state to newly connected client
+  socket.emit('stateUpdate', getData()) // Send the current state to newly connected client
   socket.on('disconnect', () => {
     console.log('Disconnected', socket.id)
   })
