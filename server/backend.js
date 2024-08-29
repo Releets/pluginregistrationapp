@@ -1,4 +1,4 @@
-import { mkdir, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import express, { json } from 'express'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
@@ -16,34 +16,36 @@ app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
 const DATA_FILE = './data/data.json'
 
+const timestamp = () => new Date().toISOString()
+
 function getData() {
   try {
     const rawData = readFileSync(DATA_FILE)
-    console.log('Read data file', JSON.parse(rawData))
+    console.log(timestamp(), 'Read data file', JSON.parse(rawData))
     return JSON.parse(rawData)
   } catch (err) {
-    console.warn('Initializing data file')
+    console.log(timestamp(), 'Initializing data file')
     mkdirSync('./data')
     writeFileSync(DATA_FILE, JSON.stringify([]))
     return []
   }
 }
 
-function addToQueue(initials) {
+function addToQueue(user) {
   const data = getData()
-  if (data.includes(initials)) throw new Error('Initials already in queue')
-  data.push(initials)
+  if (data.includes(user)) throw new Error('user already in queue')
+  data.push(user)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log('Added %s to queue', initials)
+  console.log(timestamp(), 'Added ' + user + ' to queue')
   return data
 }
 
-function removeFromQueue(initials) {
+function removeFromQueue(user) {
   const data = getData()
-  if (!data.includes(initials)) throw new Error('Initials not in queue')
-  data.splice(data.indexOf(initials), 1)
+  if (!data.includes(user)) throw new Error('user not in queue')
+  data.splice(data.indexOf(user), 1)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log('Removed %s from queue', initials)
+  console.log(timestamp(), 'Removed ' + user + ' from queue')
   return data
 }
 
@@ -54,7 +56,7 @@ app.post('/add', (req, res) => {
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
-    console.error('Error adding to queue:', err.message)
+    console.error(timestamp(), 'Error adding to queue:', err.message)
     res.status(500).send(err.message)
   }
 })
@@ -66,19 +68,19 @@ app.post('/remove', (req, res) => {
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
-    console.error('Error removing from queue:', err.message)
+    console.error(timestamp(), 'Error removing from queue:', err.message)
     res.status(500).send(err.message)
   }
 })
 
 io.on('connection', socket => {
-  console.log('Connected', socket.id)
+  console.log(timestamp(), 'Connected', socket.id)
   socket.emit('stateUpdate', getData()) // Send the current state to newly connected client
   socket.on('disconnect', () => {
-    console.log('Disconnected', socket.id)
+    console.log(timestamp(), 'Disconnected', socket.id)
   })
 })
 
 server.listen(port, () => {
-  console.log('Server is running on port', port)
+  console.log(timestamp(), 'Server is running on port', port)
 })

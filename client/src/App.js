@@ -40,7 +40,8 @@ export default function App() {
   const addToQueue = user => {
     console.log(timestamp(), 'Adding ' + user + ' to queue')
     axios.post(adr + '/add', { value: user }).catch(err => {
-      console.error('Error adding to queue:', err.message)
+      // TODO: Display error message to user
+      console.error(timestamp(), 'Error adding to queue:', err.message)
     })
   }
 
