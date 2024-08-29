@@ -133,11 +133,11 @@ export default function App() {
       {isFree ? (
         ''
       ) : (
-        <div className='queContainer'>
-          <QueueDisplay items={queue} leaveQueFunction={displayExitModal} />
+        <div className='queueContainer'>
+          <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
         </div>
       )}
-      <div className='queForm'>
+      <div className='queueForm'>
         <input
           type='text'
           placeholder='Dine initialer'
