@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - server/**
+      
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -27,17 +28,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ./client
-          file: ./client/dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client
-
-      - name: Build and push docker image
-        uses: docker/build-push-action@v3
-        with:
           context: ./server
           file: ./server/dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-server
+          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-server:latest
