@@ -14,6 +14,11 @@ if (!port) throw new Error('SERVER_PORT environment variable not set')
 app.use(cors())
 app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
+app.use(function (_, res, next) {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin', 'X-Requested-With', 'Content-Type')
+  next()
+})
 const DATA_FILE = './data/data.json'
 
 const timestamp = () => new Date().toISOString()
