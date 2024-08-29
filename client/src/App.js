@@ -84,8 +84,9 @@ function App() {
       "username" : uname,
       "entrytime" : formattedTime
     }
-
+    console.log("Adding " + uname + "to queue")
     setQue( [...que, newElem] )
+
     setIsFree(false)
 
     passIsFreeToBackend(false)
@@ -96,10 +97,13 @@ function App() {
 
   function leaveQue(index){
     let arr = [...que];
+    console.log("Dropping " + arr[index] + "from queue")
     arr.splice(index, 1)
     setQue(arr)
-
+    
+    console.log("New queue: "+arr)
     setIsFree(arr.length === 0)
+
     
     passIsFreeToBackend(arr.length === 0)
     passQueueToBackend(arr)
