@@ -74,10 +74,10 @@ app.post('/queue', (req, res) => {
 })
 
 io.on('connection', socket => {
-  console.log('A user connected')
+  console.log('Connected', socket.id)
   socket.emit('stateUpdate', state) // Send the current state to newly connected client
   socket.on('disconnect', () => {
-    console.log('A user disconnected')
+    console.log('Disconnected', socket.id)
   })
 })
 

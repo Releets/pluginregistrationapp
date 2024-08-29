@@ -21,8 +21,6 @@ const socket = io(adr, {
 })
 
 export default function App() {
-  document.title = 'Plugin Registration Kø'
-
   const [queue, setQueue] = useState([])
   const [isFree, setIsFree] = useState(true)
   const [displayModal, setDisplayModal] = useState(false)
@@ -36,13 +34,14 @@ export default function App() {
     })
 
     // Listen for updates from the backend
-    socket.on('dataUpdate', data => {
+    socket.on('stateUpdate', data => {
+      console.log('Socket:', data)
       setIsFree(data.isFree)
       setQueue(data.queue)
     })
 
     return () => {
-      socket.off('dataUpdate')
+      socket.off('stateUpdate')
     }
   }, [])
 
