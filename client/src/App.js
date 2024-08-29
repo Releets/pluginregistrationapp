@@ -65,7 +65,12 @@ export default function App() {
     inputRef.current.placeholder = 'Dine initialer'
     inputRef.current.className = 'textinput'
 
-    addToQueue(inputRef.current.value)
+    let entry = {
+      username: inputRef.current.value,
+      entrytime: formattedTime,
+    }
+
+    addToQueue(entry)
 
     inputRef.current.value = ''
   }
@@ -128,10 +133,8 @@ export default function App() {
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
         )}
       </div>
-      {!displayModal ? (
-        ''
-      ) : (
-        <ExitModal displayItem={queue[currentModalUserIndex]} closeModalFunction={closeExitModal} />
+      {displayModal && (
+        <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
     </div>
   )
