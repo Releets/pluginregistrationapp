@@ -8,7 +8,7 @@ const app = express()
 const server = createServer(app)
 const io = new Server(server)
 
-const port = process.env.SERVER_PORT
+const port = process.env.SERVER_PORT || 6969
 if (!port) throw new Error('SERVER_PORT environment variable not set')
 
 app.use(cors())

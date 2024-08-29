@@ -9,7 +9,7 @@ import QueueDisplay from './QueueDisplay'
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
-const adr = process.env.REACT_APP_SERVER_URL
+const adr = process.env.REACT_APP_SERVER_URL || 'http://localhost:6969'
 if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
 
 console.log('Connecting to server at', adr)
