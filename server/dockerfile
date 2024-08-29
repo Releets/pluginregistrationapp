@@ -14,9 +14,6 @@ RUN npm install
 # Define data volume
 VOLUME [ "/opt/pluginregistrationapp/data" ]
 
-# Environment variables
-ENV SERVER_PORT=6969
-
 # PORTS
 EXPOSE 6969
 

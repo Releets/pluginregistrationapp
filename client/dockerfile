@@ -15,9 +15,6 @@ RUN npm install
 # Build the app
 RUN npm run build
 
-# Environment variables
-ENV REACT_APP_SERVER_URL=https://pluginreg-api.kallerud.no
-
 # PORTS
 EXPOSE 3000
 
