@@ -2,6 +2,7 @@ import axios from 'axios'
 import io from 'socket.io-client'
 import check from './check.svg'
 import cross from './cross.svg'
+import { v4 as uuidv4 } from 'uuid';
 
 import ExitModal from './ExitModal'
 import QueueDisplay from './QueueDisplay'
@@ -37,6 +38,13 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+      if (!localStorage.getItem("privateKey")) {
+          localStorage.setItem("privateKey", uuidv4())
+      }
+
+  }, [])
+
   const addToQueue = user => {
     console.log(timestamp(), 'Adding ' + user + ' to queue')
     axios.post(adr + '/add', { value: user }).catch(err => {
@@ -45,9 +53,16 @@ export default function App() {
     })
   }
 
-  const removeFromQueue = user => {
+  const removeFromQueue = async user => {
     console.log(timestamp(), 'Removing ' + user + ' from queue')
-    axios.post(adr + '/remove', { value: user })
+    try {
+        await axios.post(adr + '/remove', {
+            value: user, privateKey: localStorage.getItem("privateKey")
+        })
+    } catch (e) {
+        console.log(e)
+        alert(e.response.data)
+    }
   }
 
   const initialsInputRef = useRef()
@@ -101,6 +116,7 @@ export default function App() {
       username: initialsInputRef.current.value,
       entrytime: Date.now(),
       estimatedFinishTime: finishTime,
+      privateKey: localStorage.getItem("privateKey")
     }
 
     addToQueue(entry)
@@ -135,6 +151,7 @@ export default function App() {
             type='number'
             placeholder='Estimert tidsbrukt'
             className='textinput'
+            min="1"
             ref={timeInputRef}
           />
         </div>
