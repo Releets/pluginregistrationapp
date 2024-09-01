@@ -46,8 +46,8 @@ export default function App() {
 
   const addToQueue = user => {
     console.log(timestamp(), 'Adding ' + user + ' to queue')
-    axios.post(adr + '/add', { value: user }).catch(err => {
-      console.warn(timestamp(), err)
+    axios.post(adr + '/add', { value: user }).catch(e => {
+      console.warn(timestamp(), e)
       alert(e.response.data)
     })
   }
