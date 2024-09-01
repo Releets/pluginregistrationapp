@@ -147,25 +147,20 @@ export default function App() {
             className='textinput'
             ref={initialsInputRef}
           />
-          <input
-            type='number'
-            placeholder='Estimert tidsbrukt'
-            className='textinput'
-            min="1"
-            max="8"
-            list="numbers"
-            ref={timeInputRef}
-          />
-          <datalist id="numbers">
-            <option value="1"></option>
-            <option value="2"></option>
-            <option value="3"></option>
-            <option value="4"></option>
-            <option value="5"></option>
-            <option value="6"></option>
-            <option value="7"></option>
-            <option value="8"></option>
-          </datalist>
+          <select 
+            className='textinput selectinput'
+            ref={timeInputRef}>
+            <option value="" disabled selected>Estimert tidsbruk (t)</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
         </div>
         <button className='button'>
           {queue.length == 0 ? 'Overta' : 'Gå i kø'}
