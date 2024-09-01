@@ -143,23 +143,21 @@ export default function App() {
         <div>
           <input
             type='text'
-            placeholder='Dine initialer'
             className='textinput'
             ref={initialsInputRef}
           />
           <select 
             className='textinput selectinput'
+            placeholder='Estimert tidsbruk'
             ref={timeInputRef}>
-            <option value="" disabled selected>Estimert tidsbruk (t)</option>
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
+            <option value="1">1 time</option>
+            <option value="2">2 timer</option>
+            <option value="3">3 timer</option>
+            <option value="4">4 timer</option>
+            <option value="5">5 timer</option>
+            <option value="6">6 timer</option>
+            <option value="7">7 timer</option>
+            <option value="8">8 timer</option>
           </select>
         </div>
         <button className='button'>
