@@ -26,7 +26,10 @@ export default function QueueDisplay(props) {
             <div className={i == 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueue(i)}>
               {item.username}
             </div>
+            <div className='entryTimeContainer'>Starttid:</div>
             <div className='entryTimeContainer'>{formatDate(item.entrytime)}</div>
+            <div className='entryTimeContainer'>Estimert ferdig:</div>
+            <div className='entryTimeContainer'>{formatDate(item.estimatedFinishTime)}</div>
           </div>
         ) : null
       )}

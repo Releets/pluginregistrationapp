@@ -50,30 +50,8 @@ export default function App() {
     axios.post(adr + '/remove', { value: user })
   }
 
-  const inputRef = useRef()
-
-  function enterQueue() {
-    if (inputRef.current.value === '') {
-      return
-    } else if (inputRef.current.value.length > 7) {
-      inputRef.current.value = ''
-      inputRef.current.placeholder = 'For mange tegn!'
-      inputRef.current.className = 'textinput wronginput'
-      return
-    }
-
-    inputRef.current.placeholder = 'Dine initialer'
-    inputRef.current.className = 'textinput'
-
-    let entry = {
-      username: inputRef.current.value,
-      entrytime: Date.now(),
-    }
-
-    addToQueue(entry)
-
-    inputRef.current.value = ''
-  }
+  const initialsInputRef = useRef()
+  const timeInputRef = useRef()
 
   function leaveQueue(index) {
     removeFromQueue(queue[index])
@@ -91,10 +69,41 @@ export default function App() {
     setDisplayModal(false)
   }
 
-  const handleKeyPress = event => {
-    if (event.key === 'Enter' && inputRef.current.value !== '') {
-      enterQueue()
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    if (!initialsInputRef.current.value) {
+      return
     }
+    if (initialsInputRef.current.value.length > 7) {
+      initialsInputRef.current.value = ''
+      timeInputRef.current.value = ''
+      initialsInputRef.current.placeholder = 'For mange tegn!'
+      initialsInputRef.current.className = 'textinput wronginput'
+      return
+    }
+
+    if (timeInputRef.current.value > 8) {
+      initialsInputRef.current.value = ''
+      timeInputRef.current.value = ''
+      timeInputRef.current.placeholder = 'Maks 8 timer'
+      timeInputRef.current.className = 'textinput wronginput'
+      return
+    }
+
+    initialsInputRef.current.placeholder = 'Dine initialer'
+    initialsInputRef.current.className = 'textinput'
+      timeInputRef.current.className = 'textinput'
+
+    const finishTime = Date.now() + (timeInputRef.current.value * 60 * 60 * 1000);
+    const entry = {
+      username: initialsInputRef.current.value,
+      entrytime: Date.now(),
+      estimatedFinishTime: finishTime,
+    }
+
+    addToQueue(entry)
+    initialsInputRef.current.value = ''
   }
 
   return (
@@ -112,23 +121,29 @@ export default function App() {
           <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
         </div>
       )}
-      <div className='queueForm'>
-        <input
-          type='text'
-          placeholder='Dine initialer'
-          className='textinput'
-          ref={inputRef}
-          onKeyUp={handleKeyPress}
-        ></input>
-        <br></br>
-        <button className='button' onClick={enterQueue}>
+      <form className='queueForm' onSubmit={handleSubmit}>
+        <div>
+          <input
+            type='text'
+            placeholder='Dine initialer'
+            className='textinput'
+            ref={initialsInputRef}
+          />
+          <input
+            type='number'
+            placeholder='Estimert tidsbrukt'
+            className='textinput'
+            ref={timeInputRef}
+          />
+        </div>
+        <button className='button'>
           {queue.length == 0 ? 'Overta' : 'Gå i kø'}
         </button>
         <br></br>
         {queue.length > 0 && (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
         )}
-      </div>
+      </form>
       {displayModal && (
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
