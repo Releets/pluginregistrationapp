@@ -29,7 +29,7 @@ export default function QueueDisplay(props) {
             <div className='entryTimeContainer'>Starttid:</div>
             <div className='entryTimeContainer'>{formatDate(item.entrytime)}</div>
             <div className='entryTimeContainer'>Estimert ferdig:</div>
-            <div className='entryTimeContainer'>{formatDate(item.estimatedFinishTime)}</div>
+            <div className='entryTimeContainer'>{formatDate(item.estimatedFinishTime).split("|")[0]}</div>
           </div>
         ) : null
       )}

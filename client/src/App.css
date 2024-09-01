@@ -59,6 +59,8 @@ body{
   padding: 0 16px;
   color: white;
   margin-bottom: 2em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
   transition: background-color 70ms cubic-bezier(.2,0,.38,.9),outline 70ms cubic-bezier(.2,0,.38,.9);  
 }
 .wronginput{
@@ -95,4 +97,7 @@ body{
 button:active{
   box-shadow: inset 0px 3px 7px #d6d6e7;
   transform: translateY(2px);
+}
+input[type="time"]::-webkit-calendar-picker-indicator{
+  filter: invert(100%);
 }

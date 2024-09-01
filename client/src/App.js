@@ -111,7 +111,9 @@ export default function App() {
     timeInputRef.current.placeholder = 'Estimert tidsbrukt'
     timeInputRef.current.className = 'textinput'
 
-    const finishTime = Date.now() + (timeInputRef.current.value * 60 * 60 * 1000);
+    const now = new Date()
+    const [hours, minutes] = timeInputRef.current.value.split(":").map(Number);
+    const finishTime = now.setHours(now.getHours() + hours, now.getMinutes() + minutes);
     const entry = {
       username: initialsInputRef.current.value,
       entrytime: Date.now(),
@@ -148,7 +150,7 @@ export default function App() {
             ref={initialsInputRef}
           />
           <input
-            type='number'
+            type='time'
             placeholder='Estimert tidsbrukt'
             className='textinput'
             min="1"
