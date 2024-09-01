@@ -38,7 +38,7 @@ function getData() {
 
 function addToQueue(user) {
   const data = getData()
-  if (data.includes(user)) throw new Error('user already in queue')
+  if (data.map(entry => entry.username === user.username)) throw new Error('user already in queue')
   data.push(user)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
   console.log(timestamp(), 'Added ' + user + ' to queue')
@@ -49,7 +49,7 @@ function removeFromQueue(toRemove, privateKey) {
   const data = getData()
   const item = data.find(entry => toRemove.username === entry.username)
   if (!item) return data
-  if (item.privateKey !== privateKey) throw new Error("Du kan bare slette deg selv fra køen")
+  if (item.privateKey !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
   const newData = data.filter(entry => toRemove.username !== entry.username)
   writeFileSync(DATA_FILE, JSON.stringify(newData), { flag: 'w' })
   console.log(timestamp(), 'Removed ' + toRemove.username + ' from queue')
@@ -71,7 +71,7 @@ app.post('/add', (req, res) => {
 // API to remove from the queue
 app.post('/remove', (req, res) => {
   try {
-    const { value, privateKey } = req.body;
+    const { value, privateKey } = req.body
     const updatedQueue = removeFromQueue(value, privateKey)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
@@ -94,8 +94,8 @@ server.listen(port, () => {
 
   // Throwing people out of queue
   setInterval(() => {
-      const data = getData().filter(entry => entry.estimatedFinishTime > Date.now())
-      writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-      io.emit('stateUpdate', data) // Broadcast the updated state to all clients
+    const data = getData().filter(entry => entry.estimatedFinishTime > Date.now())
+    writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+    io.emit('stateUpdate', data) // Broadcast the updated state to all clients
   }, 1000 * 60)
 })
