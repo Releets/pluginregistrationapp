@@ -45,11 +45,15 @@ function addToQueue(user) {
   return data
 }
 
-function removeFromQueue(toRemove) {
-  const data = getData().filter(entry => toRemove.username !== entry.username)
-  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+function removeFromQueue(toRemove, privateKey) {
+  const data = getData()
+  const item = data.find(entry => toRemove.username === entry.username)
+  if (!item) return data
+  if (item.privateKey !== privateKey) throw new Error("Du kan bare slette deg selv fra køen")
+  const newData = data.filter(entry => toRemove.username !== entry.username)
+  writeFileSync(DATA_FILE, JSON.stringify(newData), { flag: 'w' })
   console.log(timestamp(), 'Removed ' + toRemove.username + ' from queue')
-  return data
+  return newData
 }
 
 // API to append the queue
@@ -67,7 +71,8 @@ app.post('/add', (req, res) => {
 // API to remove from the queue
 app.post('/remove', (req, res) => {
   try {
-    const updatedQueue = removeFromQueue(req.body.value)
+    const { value, privateKey } = req.body;
+    const updatedQueue = removeFromQueue(value, privateKey)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
@@ -86,4 +91,11 @@ io.on('connection', socket => {
 
 server.listen(port, () => {
   console.log(timestamp(), 'Server is running on port', port)
+
+  // Throwing people out of queue
+  setInterval(() => {
+      const data = getData().filter(entry => entry.estimatedFinishTime > Date.now())
+      writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+      io.emit('stateUpdate', data) // Broadcast the updated state to all clients
+  }, 1000 * 60)
 })
