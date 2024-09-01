@@ -93,7 +93,8 @@ export default function App() {
 
     initialsInputRef.current.placeholder = 'Dine initialer'
     initialsInputRef.current.className = 'textinput'
-      timeInputRef.current.className = 'textinput'
+    timeInputRef.current.placeholder = 'Estimert tidsbrukt'
+    timeInputRef.current.className = 'textinput'
 
     const finishTime = Date.now() + (timeInputRef.current.value * 60 * 60 * 1000);
     const entry = {
@@ -104,6 +105,7 @@ export default function App() {
 
     addToQueue(entry)
     initialsInputRef.current.value = ''
+    timeInputRef.current.value = ''
   }
 
   return (
