@@ -141,7 +141,7 @@ export default function App() {
       )}
       <form className='queueForm' onSubmit={handleSubmit}>
         <div>
-          <input type='text' className='textinput' ref={initialsInputRef} />
+          <input type='text' placeholder='Dine initialer' className='textinput' ref={initialsInputRef} />
           <select className='textinput selectinput' ref={timeInputRef}>
             <option value='1'>1 time</option>
             <option value='2'>2 timer</option>
