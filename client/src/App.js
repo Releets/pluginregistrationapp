@@ -2,7 +2,7 @@ import axios from 'axios'
 import io from 'socket.io-client'
 import check from './check.svg'
 import cross from './cross.svg'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 import ExitModal from './ExitModal'
 import QueueDisplay from './QueueDisplay'
@@ -39,10 +39,9 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-      if (!localStorage.getItem("privateKey")) {
-          localStorage.setItem("privateKey", uuidv4())
-      }
-
+    if (!localStorage.getItem('privateKey')) {
+      localStorage.setItem('privateKey', uuidv4())
+    }
   }, [])
 
   const addToQueue = user => {
@@ -56,12 +55,13 @@ export default function App() {
   const removeFromQueue = async user => {
     console.log(timestamp(), 'Removing ' + user + ' from queue')
     try {
-        await axios.post(adr + '/remove', {
-            value: user, privateKey: localStorage.getItem("privateKey")
-        })
+      await axios.post(adr + '/remove', {
+        value: user,
+        privateKey: localStorage.getItem('privateKey'),
+      })
     } catch (e) {
-        console.log(e)
-        alert(e.response.data)
+      console.log(e)
+      alert(e.response.data)
     }
   }
 
@@ -85,7 +85,7 @@ export default function App() {
   }
 
   const handleSubmit = event => {
-    event.preventDefault();
+    event.preventDefault()
 
     if (!initialsInputRef.current.value) {
       return
@@ -111,12 +111,12 @@ export default function App() {
     timeInputRef.current.placeholder = 'Estimert tidsbrukt'
     timeInputRef.current.className = 'textinput'
 
-    const finishTime = Date.now() + (timeInputRef.current.value * 60 * 60 * 1000);
+    const finishTime = Date.now() + timeInputRef.current.value * 60 * 60 * 1000
     const entry = {
       username: initialsInputRef.current.value,
       entrytime: Date.now(),
       estimatedFinishTime: finishTime,
-      privateKey: localStorage.getItem("privateKey")
+      privateKey: localStorage.getItem('privateKey'),
     }
 
     addToQueue(entry)
@@ -141,35 +141,19 @@ export default function App() {
       )}
       <form className='queueForm' onSubmit={handleSubmit}>
         <div>
-          <input
-            type='text'
-            placeholder='Dine initialer'
-            className='textinput'
-            ref={initialsInputRef}
-          />
-          <input
-            type='number'
-            placeholder='Estimert tidsbrukt'
-            className='textinput'
-            min="1"
-            max="8"
-            list="numbers"
-            ref={timeInputRef}
-          />
-          <datalist id="numbers">
-            <option value="1"></option>
-            <option value="2"></option>
-            <option value="3"></option>
-            <option value="4"></option>
-            <option value="5"></option>
-            <option value="6"></option>
-            <option value="7"></option>
-            <option value="8"></option>
-          </datalist>
+          <input type='text' placeholder='Dine initialer' className='textinput' ref={initialsInputRef} />
+          <select className='textinput selectinput' ref={timeInputRef}>
+            <option value='1'>1 time</option>
+            <option value='2'>2 timer</option>
+            <option value='3'>3 timer</option>
+            <option value='4'>4 timer</option>
+            <option value='5'>5 timer</option>
+            <option value='6'>6 timer</option>
+            <option value='7'>7 timer</option>
+            <option value='8'>8 timer</option>
+          </select>
         </div>
-        <button className='button'>
-          {queue.length == 0 ? 'Overta' : 'Gå i kø'}
-        </button>
+        <button className='button'>{queue.length == 0 ? 'Overta' : 'Gå i kø'}</button>
         <br></br>
         {queue.length > 0 && (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
