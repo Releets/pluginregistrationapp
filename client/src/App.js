@@ -111,9 +111,7 @@ export default function App() {
     timeInputRef.current.placeholder = 'Estimert tidsbrukt'
     timeInputRef.current.className = 'textinput'
 
-    const now = new Date()
-    const [hours, minutes] = timeInputRef.current.value.split(":").map(Number);
-    const finishTime = now.setHours(now.getHours() + hours, now.getMinutes() + minutes);
+    const finishTime = Date.now() + (timeInputRef.current.value * 60 * 60 * 1000);
     const entry = {
       username: initialsInputRef.current.value,
       entrytime: Date.now(),
@@ -150,12 +148,24 @@ export default function App() {
             ref={initialsInputRef}
           />
           <input
-            type='time'
+            type='number'
             placeholder='Estimert tidsbrukt'
             className='textinput'
             min="1"
+            max="8"
+            list="numbers"
             ref={timeInputRef}
           />
+          <datalist id="numbers">
+            <option value="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option value="4"></option>
+            <option value="5"></option>
+            <option value="6"></option>
+            <option value="7"></option>
+            <option value="8"></option>
+          </datalist>
         </div>
         <button className='button'>
           {queue.length == 0 ? 'Overta' : 'Gå i kø'}
