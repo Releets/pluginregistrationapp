@@ -92,6 +92,7 @@ io.on('connection', socket => {
 server.listen(port, () => {
   console.log(timestamp(), 'Server is running on port', port)
 
+  // Throwing people out of queue
   setInterval(() => {
       const data = getData().filter(entry => entry.estimatedFinishTime > Date.now())
       writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
