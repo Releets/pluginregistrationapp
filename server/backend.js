@@ -38,7 +38,7 @@ function getData() {
 
 function addToQueue(user) {
   const data = getData()
-  if (data.map(entry => entry.username === user.username)) throw new Error('user already in queue')
+  if (data.map(entry => entry.username === user.username).length > 0) throw new Error('User already in queue')
   data.push(user)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
   console.log(timestamp(), 'Added ' + user + ' to queue')
