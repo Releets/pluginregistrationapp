@@ -47,8 +47,8 @@ export default function App() {
   const addToQueue = user => {
     console.log(timestamp(), 'Adding ' + user + ' to queue')
     axios.post(adr + '/add', { value: user }).catch(err => {
-      // TODO: Display error message to user
-      console.error(timestamp(), 'Error adding to queue:', err.message)
+      console.warn(timestamp(), err)
+      alert(e.response.data)
     })
   }
 
@@ -60,7 +60,7 @@ export default function App() {
         privateKey: localStorage.getItem('privateKey'),
       })
     } catch (e) {
-      console.log(e)
+      console.warn(timestamp(), e)
       alert(e.response.data)
     }
   }
