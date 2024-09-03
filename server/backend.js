@@ -49,8 +49,8 @@ function removeFromQueue(toRemove, privateKey, force = false) {
   const item = data[i]
 
   if (!item) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
-  if (item.queueExitTime) throw new Error(`Brukeren '${toRemove.username}' er ikke i køen lenger`)
-  if (item.privateKey !== privateKey || force) throw new Error('Du kan bare slette deg selv fra køen')
+  if (!force && item.queueExitTime) throw new Error(`Brukeren '${toRemove.username}' er ikke i køen lenger`)
+  if (!force && item.privateKey !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
 
   data[i] = { ...item, queueExitTime: Date.now() }
 
