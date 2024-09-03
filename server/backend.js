@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import express, { json } from 'express'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
@@ -19,6 +19,7 @@ app.use(function (_, res, next) {
   res.header('Access-Control-Allow-Headers', 'Origin', 'X-Requested-With', 'Content-Type')
   next()
 })
+
 const DATA_FILE = './data/data.json'
 
 const timestamp = () => new Date().toISOString()
@@ -26,11 +27,9 @@ const timestamp = () => new Date().toISOString()
 function getData() {
   try {
     const rawData = readFileSync(DATA_FILE)
-    console.log(timestamp(), 'Read data file', JSON.parse(rawData))
     return JSON.parse(rawData)
   } catch (err) {
     console.log(timestamp(), 'Initializing data file')
-    mkdirSync('./data')
     writeFileSync(DATA_FILE, JSON.stringify([]))
     return []
   }
@@ -38,22 +37,26 @@ function getData() {
 
 function addToQueue(user) {
   const data = getData()
-  if (data.some(entry => entry.username === user.username)) throw new Error('Denne brukeren er allerede i køen')
   data.push(user)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
   console.log(timestamp(), 'Added ' + user + ' to queue')
   return data
 }
 
-function removeFromQueue(toRemove, privateKey) {
+function removeFromQueue(toRemove, privateKey, force = false) {
   const data = getData()
-  const item = data.find(entry => toRemove.username === entry.username)
-  if (!item) return data
-  if (item.privateKey !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
-  const newData = data.filter(entry => toRemove.username !== entry.username)
-  writeFileSync(DATA_FILE, JSON.stringify(newData), { flag: 'w' })
-  console.log(timestamp(), 'Removed ' + toRemove.username + ' from queue')
-  return newData
+  const i = data.findIndex(entry => toRemove.username === entry.username && toRemove.entrytime === entry.entrytime)
+  const item = data[i]
+
+  if (!item) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
+  if (item.queueExitTime) throw new Error(`Brukeren '${toRemove.username}' er ikke i køen lenger`)
+  if (item.privateKey !== privateKey || force) throw new Error('Du kan bare slette deg selv fra køen')
+
+  data[i] = { ...item, queueExitTime: Date.now() }
+
+  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
+  console.log(new Date(data[i].queueExitTime).toISOString(), 'Removed ' + toRemove.username + ' from queue')
+  return data
 }
 
 // API to append the queue
@@ -94,8 +97,16 @@ server.listen(port, () => {
 
   // Throwing people out of queue
   setInterval(() => {
-    const data = getData().filter(entry => entry.estimatedFinishTime > Date.now())
-    writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-    io.emit('stateUpdate', data) // Broadcast the updated state to all clients
+    getData()
+      .filter(entry => entry.estimatedFinishTime > Date.now() && !entry.queueExitTime)
+      .forEach(entry => {
+        try {
+          removeFromQueue(entry, undefined, true)
+        } catch (err) {
+          console.error(timestamp(), err.message)
+        }
+      })
+
+    io.emit('stateUpdate', getData()) // Broadcast the updated state to all clients
   }, 1000 * 60)
 })
