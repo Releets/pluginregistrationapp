@@ -98,7 +98,7 @@ server.listen(port, () => {
   // Throwing people out of queue
   setInterval(() => {
     getData()
-      .filter(entry => entry.estimatedFinishTime > Date.now() && !entry.queueExitTime)
+      .filter(entry => entry.estimatedFinishTime < Date.now() && !entry.queueExitTime)
       .forEach(entry => {
         try {
           removeFromQueue(entry, undefined, true)
