@@ -9,6 +9,7 @@ import QueueDisplay from './QueueDisplay'
 
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import HistoryDisplay from './HistoryDisplay'
 
 const adr = 'https://pluginreg-api.kallerud.no'
 if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
@@ -22,15 +23,18 @@ const socket = io(adr, {
 })
 
 export default function App() {
-  const [queue, setQueue] = useState([])
+  const [data, setData] = useState([])
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
+
+  const queue = data.filter(e => !e.queueExitTime)
+  const history = data.filter(e => !!e.queueExitTime)
 
   useEffect(() => {
     // Listen for updates from the backend
     socket.on('stateUpdate', data => {
       console.log(timestamp(), 'Recieved update from backend:', data)
-      setQueue(data)
+      setData(data)
     })
 
     return () => {
@@ -134,11 +138,14 @@ export default function App() {
           alt={queue.length === 0 ? 'Available' : 'Unavailable'}
         ></img>
       </div>
+
       {queue.length > 0 && (
         <div className='queueContainer'>
           <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
         </div>
       )}
+      <div style={{ height: '100%' }} />
+
       <form className='queueForm' onSubmit={handleSubmit}>
         <div>
           <input type='text' placeholder='Dine initialer' className='textinput' ref={initialsInputRef} />
@@ -153,7 +160,7 @@ export default function App() {
             <option value='8'>8 timer</option>
           </select>
         </div>
-        <button className='button'>{queue.length == 0 ? 'Overta' : 'Gå i kø'}</button>
+        <button className='button'>{queue.length === 0 ? 'Overta' : 'Gå i kø'}</button>
         <br></br>
         {queue.length > 0 && (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
@@ -162,6 +169,8 @@ export default function App() {
       {displayModal && (
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
+
+      {history.length > 0 && <HistoryDisplay queue={history} />}
     </div>
   )
 }

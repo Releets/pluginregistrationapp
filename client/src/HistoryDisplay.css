@@ -1,0 +1,20 @@
+.historyDisplay {
+  color: white;
+  width: 256px;
+  margin-bottom: 2em;
+}
+
+.historyEntry {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 1em;
+  border-radius: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.username {
+  font-weight: bold;
+}
+
+.timestamp {
+  opacity: 0.5;
+}
