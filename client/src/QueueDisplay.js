@@ -1,6 +1,4 @@
 import './QueueDisplay.css'
-import { formatDate } from './utils'
-
 import PropTypes from 'prop-types'
 
 QueueDisplay.propTypes = {
@@ -19,10 +17,10 @@ export default function QueueDisplay({ leaveQueueFunction, items }) {
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
               {item.username}
             </div>
-            <div className='entryTimeContainer'>Starttid:</div>
-            <div className='entryTimeContainer'>{formatDate(item.entrytime)}</div>
-            <div className='entryTimeContainer'>Estimert ferdig:</div>
-            <div className='entryTimeContainer'>{formatDate(item.estimatedFinishTime).split('|')[0]}</div>
+            <div className='entryTimeContainer'>Ferdig:</div>
+            <div className='entryTimeContainer'>
+              {new Date(item.estimatedFinishTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
           </div>
         ))}
     </div>
