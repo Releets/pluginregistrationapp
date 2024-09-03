@@ -16,7 +16,7 @@ export default function QueueDisplay({ leaveQueueFunction, items }) {
         .slice(0, 5)
         .map((item, i) => (
           <div key={item.username}>
-            <div className={i == 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
+            <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
               {item.username}
             </div>
             <div className='entryTimeContainer'>Starttid:</div>
