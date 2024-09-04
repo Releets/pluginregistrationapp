@@ -6,6 +6,10 @@ QueueDisplay.propTypes = {
   items: PropTypes.array.isRequired,
 }
 
+function getEstimated(entry) {
+  return (entry.estimatedFinishTime - entry.entrytime) / 60 / 60 / 1000
+}
+
 export default function QueueDisplay({ leaveQueueFunction, items }) {
   return (
     <div className='queue'>
@@ -17,10 +21,21 @@ export default function QueueDisplay({ leaveQueueFunction, items }) {
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
               {item.username}
             </div>
-            <div className='entryTimeContainer'>Ferdig:</div>
-            <div className='entryTimeContainer'>
-              {new Date(item.estimatedFinishTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
+            {i === 0 ? (
+              <>
+                <div className='entryTimeContainer'>Booket til</div>
+                <div className='entryTimeContainer'>
+                  {new Date(item.estimatedFinishTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className='entryTimeContainer'>Estimert</div>
+                <div className='entryTimeContainer'>
+                  {getEstimated(item)} time{getEstimated(item) > 1 ? 'r' : ''}
+                </div>
+              </>
+            )}
           </div>
         ))}
     </div>
