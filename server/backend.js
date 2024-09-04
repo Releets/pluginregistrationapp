@@ -1,8 +1,8 @@
-import { readFileSync, writeFileSync } from 'fs'
 import express, { json } from 'express'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
 import cors from 'cors'
+import { enterQueue, exitQueue, loadData } from './dataService.js'
 
 const app = express()
 const server = createServer(app)
@@ -20,56 +20,12 @@ app.use(function (_, res, next) {
   next()
 })
 
-const DATA_FILE = './data/data.json'
-
 const timestamp = () => new Date().toISOString()
-
-function getData() {
-  try {
-    const rawData = readFileSync(DATA_FILE)
-    return JSON.parse(rawData)
-  } catch (err) {
-    console.log(timestamp(), 'Initializing data file')
-    writeFileSync(DATA_FILE, JSON.stringify([]))
-    return []
-  }
-}
-
-function addToQueue(user) {
-  const data = getData()
-  data.push(user)
-  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log(timestamp(), 'Added ' + user.username + ' to queue')
-  return data
-}
-
-function removeFromQueue(toRemove, privateKey, force = false) {
-  const data = getData()
-  const i = data.findIndex(entry => toRemove.username === entry.username && toRemove.entrytime === entry.entrytime)
-  const item = data[i]
-
-  if (!item) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
-  if (!force && item.queueExitTime) throw new Error(`Brukeren '${toRemove.username}' er ikke i køen lenger`)
-  if (!force && item.privateKey !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
-
-  data[i] = { ...item, queueExitTime: Date.now() }
-
-  if (data.length > i + 1) {
-    // Update the estimated finish time of the next person in queue
-    const next = data[i + 1]
-    const difference = next.estimatedFinishTime - next.entrytime
-    data[i + 1] = { ...next, estimatedFinishTime: Date.now() + difference }
-  }
-
-  writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log(new Date(data[i].queueExitTime).toISOString(), 'Removed ' + toRemove.username + ' from queue')
-  return data
-}
 
 // API to append the queue
 app.post('/add', (req, res) => {
   try {
-    const updatedQueue = addToQueue(req.body.value)
+    const updatedQueue = enterQueue(req.body.value)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
@@ -82,7 +38,7 @@ app.post('/add', (req, res) => {
 app.post('/remove', (req, res) => {
   try {
     const { value, privateKey } = req.body
-    const updatedQueue = removeFromQueue(value, privateKey)
+    const updatedQueue = exitQueue(value, privateKey)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
@@ -93,7 +49,7 @@ app.post('/remove', (req, res) => {
 
 io.on('connection', socket => {
   console.log(timestamp(), 'Connected', socket.id)
-  socket.emit('stateUpdate', getData()) // Send the current state to newly connected client
+  socket.emit('stateUpdate', loadData()) // Send the current state to newly connected client
   socket.on('disconnect', () => {
     console.log(timestamp(), 'Disconnected', socket.id)
   })
@@ -104,16 +60,17 @@ server.listen(port, () => {
 
   // Throwing people out of queue
   setInterval(() => {
-    getData()
+    const data = loadData()
+    data
       .filter(entry => entry.estimatedFinishTime < Date.now() && !entry.queueExitTime)
       .forEach(entry => {
         try {
-          removeFromQueue(entry, undefined, true)
+          exitQueue(entry, undefined, true)
         } catch (err) {
           console.error(timestamp(), err.message)
         }
       })
 
-    io.emit('stateUpdate', getData()) // Broadcast the updated state to all clients
+    io.emit('stateUpdate', data) // Broadcast the updated state to all clients
   }, 1000 * 60)
 })
