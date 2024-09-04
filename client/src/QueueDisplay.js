@@ -32,7 +32,7 @@ export default function QueueDisplay({ leaveQueueFunction, items }) {
               <>
                 <div className='entryTimeContainer'>Estimert</div>
                 <div className='entryTimeContainer'>
-                  {getEstimated(item)} time{getEstimated(item) > 1 ? 'r' : ''}
+                  {getEstimated(item)} time{getEstimated(item) === 1 ? '' : 'r'}
                 </div>
               </>
             )}
