@@ -39,7 +39,7 @@ function addToQueue(user) {
   const data = getData()
   data.push(user)
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
-  console.log(timestamp(), 'Added ' + user + ' to queue')
+  console.log(timestamp(), 'Added ' + user.username + ' to queue')
   return data
 }
 
@@ -58,7 +58,7 @@ function removeFromQueue(toRemove, privateKey, force = false) {
     // Update the estimated finish time of the next person in queue
     const next = data[i + 1]
     const difference = next.estimatedFinishTime - next.entrytime
-    data[i + 1] = { next, estimatedFinishTime: Date.now() + difference }
+    data[i + 1] = { ...next, estimatedFinishTime: Date.now() + difference }
   }
 
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
