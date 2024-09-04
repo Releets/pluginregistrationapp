@@ -54,6 +54,13 @@ function removeFromQueue(toRemove, privateKey, force = false) {
 
   data[i] = { ...item, queueExitTime: Date.now() }
 
+  if (data.length > i + 1) {
+    // Update the estimated finish time of the next person in queue
+    const next = data[i + 1]
+    const difference = next.estimatedFinishTime - next.entrytime
+    data[i + 1] = { next, estimatedFinishTime: Date.now() + difference }
+  }
+
   writeFileSync(DATA_FILE, JSON.stringify(data), { flag: 'w' })
   console.log(new Date(data[i].queueExitTime).toISOString(), 'Removed ' + toRemove.username + ' from queue')
   return data
