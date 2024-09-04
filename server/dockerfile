@@ -5,6 +5,7 @@ WORKDIR /opt/pluginregistrationapp
 
 # Copy the app to the container
 COPY backend.js .
+COPY dataService.js .
 COPY package.json .
 
 # Install dependencies
