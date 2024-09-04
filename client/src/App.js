@@ -115,17 +115,14 @@ export default function App() {
     timeInputRef.current.placeholder = 'Estimert tidsbrukt'
     timeInputRef.current.className = 'textinput'
 
-    const finishTime = Date.now() + timeInputRef.current.value * 60 * 60 * 1000
     const entry = {
       username: initialsInputRef.current.value,
-      entrytime: Date.now(),
-      estimatedFinishTime: finishTime,
+      estimated: parseInt(timeInputRef.current.value ?? 1),
       privateKey: localStorage.getItem('privateKey'),
     }
 
     addToQueue(entry)
     initialsInputRef.current.value = ''
-    timeInputRef.current.value = ''
   }
 
   return (
