@@ -37,10 +37,11 @@ export default function App() {
   const [displaySpinner, setDisplaySpinner] = useState(false)
   const [audioMode, setAudioMode] = useState('') 
   const [isReversed, setIsReversed] = useState(true);
+  const [showLog, setShowLog] = useState(true);
 
   const queue = data.filter(e => !e.queueExitTime)
   const history = data.filter(e => !!e.queueExitTime)
-  let currentHolder = ""
+  let currentHolder = ''
 
   let sounds = {
     'free' : new Audio(queueFreeSound),
@@ -65,7 +66,7 @@ export default function App() {
         //Play sound if user is kicked from queue
         if (data.filter(e => !e.queueExitTime)[0].privateKey != localStorage.getItem('privateKey') && currentHolder === data.filter(e => !e.queueExitTime)[0].privateKey){
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          currentHolder = ""
+          currentHolder = ''
           playAudio(sounds['kick'+audioMode])
         }
       }
@@ -168,13 +169,24 @@ export default function App() {
       console.log(timestamp(), 'Cancelled initial audio')
     }
   }
+  
   const handleMenuClick = () => {
-    setTimeout(() => setIsReversed(!isReversed), 10);
+    setIsReversed(!isReversed);
+  }
+
+  const setOptions = (opt, value) => {
+    if(opt === 'hidelog'){
+      value ? setShowLog(false) : setShowLog(true)
+    }
+    else if(opt === 'audiomode'){
+      value ? setAudioMode('-tob') : setAudioMode('')
+      console.log(audioMode)
+    }
   }
 
   return (
     <div className='App'>
-      <NavMenu isReversed={isReversed} handleClick={handleMenuClick}/>
+      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions}/>
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
         <Spinner />
@@ -221,7 +233,7 @@ export default function App() {
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
 
-      {history.length > 0 && <HistoryDisplay queue={history} />}
+      {(history.length > 0 && showLog) &&  <HistoryDisplay queue={history}/>}
     </div>
   )
 }
