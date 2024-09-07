@@ -1,15 +1,23 @@
 import axios from 'axios'
 import io from 'socket.io-client'
-import check from './check.svg'
-import cross from './cross.svg'
+import check from './icons/check.svg'
+import cross from './icons/cross.svg'
 import { v4 as uuidv4 } from 'uuid'
 
 import ExitModal from './ExitModal'
 import QueueDisplay from './QueueDisplay'
+import HistoryDisplay from './HistoryDisplay'
+import Spinner from './Spinner'
+
+import queueFreeSound from './audio/queue_free.mp3'
+import queueKickSound from './audio/queue_kick.mp3'
+import queueFreeSoundTob from './audio/queue_free_tob.mp3'
+import queueKickSoundTob from './audio/queue_kick_tob.mp3'
+
+import './styles/App.css'
 
 import { useEffect, useRef, useState } from 'react'
-import './App.css'
-import HistoryDisplay from './HistoryDisplay'
+import NavMenu from './NavMenu'
 
 const adr = 'https://pluginreg-api.kallerud.no'
 if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
@@ -26,15 +34,43 @@ export default function App() {
   const [data, setData] = useState([])
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
+  const [displaySpinner, setDisplaySpinner] = useState(false)
+  const [audioMode, setAudioMode] = useState('') 
+  const [isReversed, setIsReversed] = useState(true);
 
   const queue = data.filter(e => !e.queueExitTime)
   const history = data.filter(e => !!e.queueExitTime)
+  let currentHolder = ""
+
+  let sounds = {
+    'free' : new Audio(queueFreeSound),
+    'kick' : new Audio(queueKickSound),
+    'free-tob' : new Audio(queueFreeSoundTob),
+    'kick-tob' : new Audio(queueKickSoundTob)
+  }
 
   useEffect(() => {
     // Listen for updates from the backend
+    setDisplaySpinner(true)
     socket.on('stateUpdate', data => {
       console.log(timestamp(), 'Recieved update from backend:', data)
+      let userkey = localStorage.getItem('privateKey')
+      if(data.filter(e => !e.queueExitTime)[0] != undefined){
+        //Play sound if user overtakes queue
+        if (data.filter(e => !e.queueExitTime)[0].privateKey === userkey && currentHolder != data.filter(e => !e.queueExitTime)[0].privateKey) {
+          console.log(timestamp(), 'PluginReg is now yours')
+          currentHolder = userkey
+          playAudio(sounds['free'+audioMode])
+        } 
+        //Play sound if user is kicked from queue
+        if (data.filter(e => !e.queueExitTime)[0].privateKey != localStorage.getItem('privateKey') && currentHolder === data.filter(e => !e.queueExitTime)[0].privateKey){
+          console.log(timestamp(), 'Removed from queue due to alloted timeslot')
+          currentHolder = ""
+          playAudio(sounds['kick'+audioMode])
+        }
+      }
       setData(data)
+      setDisplaySpinner(false)
     })
 
     return () => {
@@ -125,23 +161,41 @@ export default function App() {
     initialsInputRef.current.value = ''
   }
 
+  const playAudio = (sound) => {
+    try{
+      sound.play()
+    }catch(e){
+      console.log(timestamp(), 'Cancelled initial audio')
+    }
+  }
+  const handleMenuClick = () => {
+    setTimeout(() => setIsReversed(!isReversed), 10);
+  }
+
   return (
     <div className='App'>
+      <NavMenu isReversed={isReversed} handleClick={handleMenuClick}/>
       <div className='banner'>Er Plugin Registration ledig?</div>
-      <div className='availabilityIcon'>
-        <img
-          className='icon'
-          src={queue.length === 0 ? check : cross}
-          alt={queue.length === 0 ? 'Available' : 'Unavailable'}
-        ></img>
-      </div>
+      {displaySpinner ? (
+        <Spinner />
+      ) : (
+        <div>
+          <div className='availabilityIcon'>
+            <img
+              className='icon'
+              src={queue.length === 0 ? check : cross}
+              alt={queue.length === 0 ? 'Available' : 'Unavailable'}
+            ></img>
+          </div>
 
-      {queue.length > 0 && (
-        <div className='queueContainer'>
-          <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+          {queue.length > 0 && (
+            <div className='queueContainer'>
+              <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+            </div>
+          )}
+          <div style={{ height: '100%' }} />
         </div>
       )}
-      <div style={{ height: '100%' }} />
 
       <form className='queueForm' onSubmit={handleSubmit}>
         <div>

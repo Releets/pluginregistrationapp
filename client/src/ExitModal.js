@@ -1,4 +1,4 @@
-import './exitModal.css'
+import './styles/exitModal.css'
 
 function ExitModal(props) {
   return (
