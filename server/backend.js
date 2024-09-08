@@ -9,7 +9,6 @@ const server = createServer(app)
 const io = new Server(server)
 
 const port = 6969
-if (!port) throw new Error('SERVER_PORT environment variable not set')
 
 app.use(cors())
 app.use(json())
