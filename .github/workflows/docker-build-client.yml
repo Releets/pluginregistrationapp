@@ -30,6 +30,8 @@ jobs:
         with:
           context: ./client
           file: ./client/dockerfile
+          build-args: |
+            BACKEND_URL=${{ vars.BACKEND_URL }}
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client:latest
