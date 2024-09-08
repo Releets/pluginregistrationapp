@@ -34,4 +34,4 @@ jobs:
             BACKEND_URL=${{ vars.BACKEND_URL }}
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client:latest
+          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client
