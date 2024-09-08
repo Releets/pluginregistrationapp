@@ -28,3 +28,4 @@ services:
     restart: always
     volumes:
       - ./data:/opt/pluginregistrationapp/data
+      
