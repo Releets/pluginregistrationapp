@@ -32,4 +32,4 @@ jobs:
           file: ./server/dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-server:latest
+          tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-server
