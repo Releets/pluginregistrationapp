@@ -11,8 +11,8 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import HistoryDisplay from './HistoryDisplay'
 
-const adr = 'https://pluginreg-api.kallerud.no'
-if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
+const adr = process.env.REACT_APP_BACKEND_URL
+if (!adr) throw new Error('REACT_APP_BACKEND_URL environment variable not set')
 
 const timestamp = () => new Date().toISOString()
 
