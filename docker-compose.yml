@@ -2,15 +2,18 @@ services:
   frontend:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      dockerfile: dockerfile-dev
       args:
         BACKEND_URL: http://localhost:6969
     develop:
       watch:
-        - action: rebuild
+        - action: sync
           path: ./client
+          target: /opt/pluginregistrationapp/
           ignore:
             - node_modules/
+        - action: rebuild
+          path: ./client/package.json
     ports:
       - "3000:3000"
     restart: always
@@ -18,7 +21,7 @@ services:
   backend:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     develop:
       watch:
         - action: rebuild
@@ -28,4 +31,3 @@ services:
     restart: always
     volumes:
       - ./data:/opt/pluginregistrationapp/data
-      

@@ -1,0 +1,21 @@
+FROM node:22-alpine
+
+# Set the working directory
+WORKDIR /opt/pluginregistrationapp
+
+# Environment variables
+ENV REACT_APP_BACKEND_URL http://localhost:6969
+
+# PORTS
+EXPOSE 3000
+
+# Copy the app to the container
+COPY public public/
+COPY src src/
+COPY package.json .
+
+# Install dependencies and run
+RUN npm install
+
+# Start the app
+CMD [ "npm", "start" ]
