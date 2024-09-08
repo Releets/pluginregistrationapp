@@ -16,6 +16,8 @@ services:
     ports:
       - "6970:3000"
     restart: always
+    depends_on:
+      - backend
   
   backend:
     image: tobasl/pluginregistrationapp-server
