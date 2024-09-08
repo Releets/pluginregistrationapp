@@ -12,6 +12,7 @@
 ```yaml
 services:
   frontend:
+    container_name: client
     image: tobasl/pluginregistrationapp-client
     ports:
       - "6970:3000"
@@ -20,6 +21,7 @@ services:
       - backend
   
   backend:
+    container_name: server
     image: tobasl/pluginregistrationapp-server
     ports:
       - "6969:6969"
