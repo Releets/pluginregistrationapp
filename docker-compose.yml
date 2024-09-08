@@ -1,5 +1,6 @@
 services:
   frontend:
+    container_name: client
     build:
       context: ./client
       dockerfile: dockerfile-dev
@@ -14,11 +15,14 @@ services:
             - node_modules/
         - action: rebuild
           path: ./client/package.json
+        - action: rebuild
+          path: ./client/dockerfile-dev
     ports:
       - "3000:3000"
     restart: always
   
   backend:
+    container_name: server
     build:
       context: ./server
       dockerfile: dockerfile
