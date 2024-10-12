@@ -7,6 +7,12 @@
 1. Open `http://localhost:5173` in your browser
 1. Profit?
 
+To test the production build, run
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+```
+
 ## Docker Compose Example
 
 ```yaml
