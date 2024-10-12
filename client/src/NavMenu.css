@@ -1,0 +1,187 @@
+.navmenuwrapper{
+  position: absolute;
+  overflow: hidden;
+  color: white;
+  top: 0;
+  right: 0;
+  width: 15em;
+  height: 15em;
+}
+.menu{
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: inherit;
+  height: inherit;
+  top: 0;
+  background-color: #003230;
+  transition: ease-in-out 0.2s;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2.6px 2.6px;
+}
+.visible{
+  right: 0;
+}
+.invisible{
+  right: -15em
+}
+.options{
+  margin-top: 5em;
+  padding: 0;
+  list-style-type: none;
+  text-align: left;
+}
+
+p{
+  margin-top: auto;
+  font-size: 60%;
+}
+a {
+  margin: 1em;
+  margin-top: 0;
+  background-color: rgb(4, 49, 4);
+  box-shadow: 0 5px 0 rgb(1, 39, 23);
+  color: white;
+  padding: 0.5em 1em;
+  position: relative;
+  text-decoration: none;
+  text-transform: uppercase;
+  bottom: 0;
+}
+
+a:hover {
+  background-color: rgb(8, 73, 8);
+}
+
+a:active {
+  box-shadow: none;
+  top: 5px;
+}
+.burger{
+  position: absolute;
+  top: 2em;
+  right: 2em;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  z-index: 10;
+  height: 25px;
+}
+.line{
+  position: relative;
+  z-index: 9;
+  width: 40px;
+  height: 3px;
+  border-radius: 5px;
+  background-color: white;
+}
+.line1{
+  top: 0px;
+}
+.line2{
+  position: relative;
+  top: 9px;
+}
+.line3{
+  top: 18px;
+}
+/* Forward Animations */
+.animate .line1 {
+  animation: top 0.5s forwards;
+}
+
+.animate .line2 {
+  animation: middle 0.5s forwards;
+}
+
+.animate .line3{
+  animation: bottom 0.5s forwards;
+}
+
+/* Reverse Animations */
+.reverse .line1 {
+  animation: top 0.5s reverse forwards;
+}
+
+.reverse .line2 {
+  animation: middle 0.5s reverse forwards;
+}
+
+.reverse .line3 {
+  animation: bottom 0.5s reverse forwards;
+}
+
+@keyframes top {
+  0%{top: 0px; transform: rotate(0deg);}
+  50%{top: 12px;transform: rotate(0deg);}
+  100%{top: 12px; transform: rotate(-45deg);}
+}
+@keyframes middle {
+  0%{visibility: visible; opacity: 1}
+  49%{visibility: visible; opacity: 1}
+  51%{visibility: hidden; opacity: 0}
+  100%{visibility: hidden; opacity: 0}
+}
+@keyframes bottom {
+  0%{top: 18px; transform: rotate(0deg);}
+  50%{top: 6px;transform: rotate(0deg);}
+  100%{top: 6px; transform: rotate(45deg);}
+}
+
+label {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
+.check {
+  appearance: none;
+  vertical-align: middle;
+  background-color: #dfe1e4;
+  border-radius: 72px;
+  border-style: none;
+  flex-shrink: 0;
+  height: 20px;
+  margin-left: 2em;
+  position: relative;
+  width: 30px;
+}
+
+.check::before {
+  bottom: -6px;
+  content: "";
+  left: -6px;
+  position: absolute;
+  right: -6px;
+  top: -6px;
+}
+.check,
+.check::after {
+  transition: all 100ms ease-out;
+  cursor: pointer;
+}
+.check::after {
+  background-color: #fff;
+  border-radius: 50%;
+  content: "";
+  height: 14px;
+  left: 3px;
+  position: absolute;
+  top: 3px;
+  width: 14px;
+}
+.check:hover {
+  background-color: #c9cbcd;
+  transition-duration: 0s;
+}
+.check:checked {
+  background-color: #6e79d6;
+}
+.check:checked::after {
+  background-color: #fff;
+  left: 13px;
+}
+.check:checked:hover {
+  background-color: #535db3;
+}
+.checkbox-wrapper :focus:not(.focus-visible) {
+  outline: 0;
+}
