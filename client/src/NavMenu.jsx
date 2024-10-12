@@ -11,7 +11,7 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
   return (
     <div className='navmenuwrapper'>
       <div className={`burger ${isReversed ? 'reverse' : 'animate'}`} onClick={handleClick}>
-        <div key={Math.random()} className='line line1'></div>
+        <div key={Math.random()}className='line line1'></div>
         <div key={Math.random()} className='line line2'></div>
         <div key={Math.random()} className='line line3'></div>
       </div>
@@ -25,13 +25,13 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
           </li>
           <li>
           <div className="checkbox-wrapper">
-            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audiomode', e.target.checked)}/>
+            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audioMode', e.target.checked ? "tobias" : "normal")}/>
             <label>Tobias Mode</label>
           </div>
           </li>
         </ul>
         <p>Want to report a bug or suggest a feature?</p>
-          <a href='https://github.com/Releets/pluginregistrationapp' target='_blank'>Create an issue here</a>
+          <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank'>Create an issue here</a>
       </div>
     </div>
   )
