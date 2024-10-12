@@ -1,4 +1,4 @@
-import './styles/QueueDisplay.css'
+import './QueueDisplay.css'
 import PropTypes from 'prop-types'
 
 QueueDisplay.propTypes = {

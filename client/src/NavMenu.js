@@ -1,4 +1,4 @@
-import './styles/NavMenu.css'
+import './NavMenu.css'
 import PropTypes from 'prop-types'
 
 NavMenu.propTypes = {

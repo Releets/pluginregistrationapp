@@ -1,4 +1,4 @@
-import './styles/HistoryDisplay.css'
+import './HistoryDisplay.css'
 import PropTypes from 'prop-types'
 import { formatDate } from './utils'
 
