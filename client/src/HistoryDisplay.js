@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
 import './HistoryDisplay.css'
+import PropTypes from 'prop-types'
 import { formatDate } from './utils'
 
 HistoryDisplay.propTypes = {
@@ -17,7 +17,7 @@ export default function HistoryDisplay({ queue }) {
         .sort((a, b) => b.queueExitTime - a.queueExitTime)
         .slice(0, 5)
         .map((item, i) => (
-          <div className='historyEntry' key={item.username} style={{ opacity: opacity(i) }}>
+          <div className='historyEntry' key={item.username + item.queueExitTime} style={{ opacity: opacity(i) }}>
             <HistoryEntry key={item.username} item={item} index={i} />
           </div>
         ))}
