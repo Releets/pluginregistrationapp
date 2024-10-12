@@ -1,13 +1,16 @@
 .navmenuwrapper{
   position: absolute;
   overflow: hidden;
+  color: white;
   top: 0;
   right: 0;
   width: 15em;
-  height: 20em;
+  height: 15em;
 }
 .menu{
   position: absolute;
+  display: flex;
+  flex-direction: column;
   width: inherit;
   height: inherit;
   top: 0;
@@ -23,9 +26,35 @@
 }
 .options{
   margin-top: 5em;
+  padding: 0;
   list-style-type: none;
   text-align: left;
+}
+
+p{
+  margin-top: auto;
+  font-size: 60%;
+}
+a {
+  margin: 1em;
+  margin-top: 0;
+  background-color: rgb(4, 49, 4);
+  box-shadow: 0 5px 0 rgb(1, 39, 23);
   color: white;
+  padding: 0.5em 1em;
+  position: relative;
+  text-decoration: none;
+  text-transform: uppercase;
+  bottom: 0;
+}
+
+a:hover {
+  background-color: rgb(8, 73, 8);
+}
+
+a:active {
+  box-shadow: none;
+  top: 5px;
 }
 .burger{
   position: absolute;
@@ -44,7 +73,6 @@
   height: 3px;
   border-radius: 5px;
   background-color: white;
-  
 }
 .line1{
   top: 0px;
@@ -99,8 +127,14 @@
   100%{top: 6px; transform: rotate(45deg);}
 }
 
-.checkbox-wrapper .outer {
+label {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
+.check {
   appearance: none;
+  vertical-align: middle;
   background-color: #dfe1e4;
   border-radius: 72px;
   border-style: none;
@@ -111,7 +145,7 @@
   width: 30px;
 }
 
-.checkbox-wrapper .outer::before {
+.check::before {
   bottom: -6px;
   content: "";
   left: -6px;
@@ -119,13 +153,12 @@
   right: -6px;
   top: -6px;
 }
-
-.checkbox-wrapper .outer,
-.checkbox-wrapper .outer::after {
+.check,
+.check::after {
   transition: all 100ms ease-out;
+  cursor: pointer;
 }
-
-.checkbox-wrapper .outer::after {
+.check::after {
   background-color: #fff;
   border-radius: 50%;
   content: "";
@@ -135,30 +168,20 @@
   top: 3px;
   width: 14px;
 }
-
-.checkbox-wrapper input[type=checkbox] {
-  cursor: default;
-}
-
-.checkbox-wrapper .outer:hover {
+.check:hover {
   background-color: #c9cbcd;
   transition-duration: 0s;
 }
-
-.checkbox-wrapper .outer:checked {
+.check:checked {
   background-color: #6e79d6;
 }
-
-.checkbox-wrapper .outer:checked::after {
+.check:checked::after {
   background-color: #fff;
   left: 13px;
 }
-
+.check:checked:hover {
+  background-color: #535db3;
+}
 .checkbox-wrapper :focus:not(.focus-visible) {
   outline: 0;
 }
-
-.checkbox-wrapper .outer:checked:hover {
-  background-color: #535db3;
-}
- 

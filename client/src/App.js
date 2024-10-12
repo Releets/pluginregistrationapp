@@ -2,12 +2,19 @@ import axios from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
-import './App.css'
-import check from './check.svg'
-import cross from './cross.svg'
+import './styles/App.css'
+import check from './icons/check.svg'
+import cross from './icons/cross.svg'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
 import QueueDisplay from './QueueDisplay'
+import Spinner from './Spinner'
+import NavMenu from './NavMenu'
+
+import queueFreeSound from './audio/queue_free.mp3'
+import queueKickSound from './audio/queue_kick.mp3'
+import queueFreeSoundTob from './audio/queue_free_tob.mp3'
+import queueKickSoundTob from './audio/queue_kick_tob.mp3'
 
 const adr = process.env.REACT_APP_BACKEND_URL
 if (!adr) throw new Error('REACT_APP_BACKEND_URL environment variable not set')
@@ -20,18 +27,20 @@ const socket = io(adr, {
   transports: ['websocket'],
 })
 
+let currentHolder = null
+
+
 export default function App() {
   const [data, setData] = useState([])
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
   const [displaySpinner, setDisplaySpinner] = useState(false)
-  const [audioMode, setAudioMode] = useState('') 
-  const [isReversed, setIsReversed] = useState(true);
-  const [showLog, setShowLog] = useState(true);
+  const [isReversed, setIsReversed] = useState(true)
+  const [appSettings, setAppSettings] = useState({})
 
   const queue = data.filter(e => !e.queueExitTime)
   const history = data.filter(e => !!e.queueExitTime)
-  let currentHolder = ''
+  const audioMode = appSettings['audioMode'] ? '-tob' : ''
 
   let sounds = {
     'free' : new Audio(queueFreeSound),
@@ -45,21 +54,22 @@ export default function App() {
     setDisplaySpinner(true)
     socket.on('stateUpdate', data => {
       console.log(timestamp(), 'Recieved update from backend:', data)
-      let userkey = localStorage.getItem('privateKey')
-      if(data.filter(e => !e.queueExitTime)[0] != undefined){
+      // If someone is in the queue (and its not the initial data update upon connecting to the site) 
+      // AND the user at the front of the queue has changed with this update
+      if(currentHolder != null && currentHolder.privateKey != data.filter(e => !e.queueExitTime)[0].privateKey){
+        let newHolder = data.filter(e => !e.queueExitTime)[0]
         //Play sound if user overtakes queue
-        if (data.filter(e => !e.queueExitTime)[0].privateKey === userkey && currentHolder != data.filter(e => !e.queueExitTime)[0].privateKey) {
+        if (newHolder.privateKey === localStorage.getItem('privateKey')) {
           console.log(timestamp(), 'PluginReg is now yours')
-          currentHolder = userkey
           playAudio(sounds['free'+audioMode])
         } 
         //Play sound if user is kicked from queue
-        if (data.filter(e => !e.queueExitTime)[0].privateKey != localStorage.getItem('privateKey') && currentHolder === data.filter(e => !e.queueExitTime)[0].privateKey){
+        else if (currentHolder.privateKey === localStorage.getItem('privateKey')){
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          currentHolder = ''
           playAudio(sounds['kick'+audioMode])
         }
       }
+      currentHolder = data.filter(e => !e.queueExitTime).length > 0 ? data.filter(e => !e.queueExitTime)[0] : null;
       setData(data)
       setDisplaySpinner(false)
     })
@@ -73,6 +83,18 @@ export default function App() {
     if (!localStorage.getItem('privateKey')) {
       localStorage.setItem('privateKey', uuidv4())
     }
+    let settings = {}
+    if(!localStorage.getItem('userSettings')){
+      settings = {
+        'hideLog' : false,
+        'audioMode' : false
+      }
+      localStorage.setItem(JSON.stringify(settings))
+    }else{
+      settings = JSON.parse(localStorage.getItem('userSettings'))
+    }
+    console.log(settings)
+    setAppSettings(settings)
   }, [])
 
   const addToQueue = user => {
@@ -165,14 +187,16 @@ export default function App() {
   }
 
   const setOptions = (opt, value) => {
-    if(opt === 'hidelog'){
-      value ? setShowLog(false) : setShowLog(true)
+    let settings = {
+      'hideLog' : appSettings['hideLog'],
+      'audioMode' : appSettings['audioMode']
     }
-    else if(opt === 'audiomode'){
-      value ? setAudioMode('-tob') : setAudioMode('')
-      console.log(audioMode)
-    }
+    settings[opt] = value
+    localStorage.setItem('userSettings', JSON.stringify(settings))
+    setAppSettings(settings)
+    console.log(appSettings)
   }
+  
 
   return (
     <div className='App'>
@@ -223,7 +247,7 @@ export default function App() {
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
 
-      {(history.length > 0 && showLog) &&  <HistoryDisplay queue={history}/>}
+      {(history.length > 0 && !appSettings['hideLog']) &&  <HistoryDisplay queue={history}/>}
     </div>
   )
 }

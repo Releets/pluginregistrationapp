@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 NavMenu.propTypes = {
   isReversed : PropTypes.bool.isRequired,
   handleClick : PropTypes.func.isRequired,
-  handleOptionToggle : PropTypes.func.isRequired
+  handleOptionToggle : PropTypes.func.isRequired,
 }
 
 export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
@@ -18,18 +18,20 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
           <li>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" className="outer" onChange={e => handleOptionToggle('hidelog', e.target.checked)}/>
-            Hide Log
+          <div className="checkbox-wrapper">
+            <input type="checkbox" className="check" onChange={e => handleOptionToggle('hideLog', e.target.checked)}/>
+            <label>Hide Log</label>
           </div>
           </li>
           <li>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" className="outer" onChange={e => handleOptionToggle('soundmode', e.target.checked)}/>
-            Tobias Mode
+          <div className="checkbox-wrapper">
+            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audiomode', e.target.checked)}/>
+            <label>Tobias Mode</label>
           </div>
           </li>
         </ul>
+        <p>Want to report a bug or suggest a feature?</p>
+          <a href='https://github.com/Releets/pluginregistrationapp' target='_blank'>Create an issue here</a>
       </div>
     </div>
   )
