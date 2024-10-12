@@ -11,16 +11,16 @@
 
 ```yaml
 services:
-  frontend:
+  client:
     container_name: pluginregapp-client
     image: tobasl/pluginregistrationapp-client
     ports:
       - '5173:5173'
     restart: always
     depends_on:
-      - backend
+      - server
 
-  backend:
+  server:
     container_name: pluginregapp-server
     image: tobasl/pluginregistrationapp-server
     ports:
