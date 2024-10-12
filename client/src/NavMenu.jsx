@@ -11,9 +11,9 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
   return (
     <div className='navmenuwrapper'>
       <div className={`burger ${isReversed ? 'reverse' : 'animate'}`} onClick={handleClick}>
-        <div className='line line1'></div>
-        <div className='line line2'></div>
-        <div className='line line3'></div>
+        <div key={Math.random()}className='line line1'></div>
+        <div key={Math.random()} className='line line2'></div>
+        <div key={Math.random()} className='line line3'></div>
       </div>
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
