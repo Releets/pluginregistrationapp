@@ -11,9 +11,9 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
   return (
     <div className='navmenuwrapper'>
       <div className={`burger ${isReversed ? 'reverse' : 'animate'}`} onClick={handleClick}>
-        <div key={Math.random()} className='line line1'></div>
-        <div key={Math.random()} className='line line2'></div>
-        <div key={Math.random()} className='line line3'></div>
+        <div className='line line1'></div>
+        <div className='line line2'></div>
+        <div className='line line3'></div>
       </div>
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
@@ -25,7 +25,7 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
           </li>
           <li>
           <div className="checkbox-wrapper">
-            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audiomode', e.target.checked)}/>
+            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audioMode', e.target.checked ? "tobias" : "normal")}/>
             <label>Tobias Mode</label>
           </div>
           </li>

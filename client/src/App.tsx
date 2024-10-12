@@ -3,18 +3,19 @@ import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
 import { isPending, QueueEntry } from '../../models/QueueEntry'
+import { UserSettings, AudioMode } from '../../models/UserSettings'
 import './App.css'
-import check from './icons/check.svg'
-import cross from './icons/cross.svg'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
+import NavMenu from './NavMenu'
 import QueueDisplay from './QueueDisplay'
 import Spinner from './Spinner'
-import NavMenu from './NavMenu'
 import queueFreeSound from './audio/queue_free.mp3'
-import queueKickSound from './audio/queue_kick.mp3'
 import queueFreeSoundTob from './audio/queue_free_tob.mp3'
+import queueKickSound from './audio/queue_kick.mp3'
 import queueKickSoundTob from './audio/queue_kick_tob.mp3'
+import check from './icons/check.svg'
+import cross from './icons/cross.svg'
 
 const adr = import.meta.env.VITE_BACKEND_URL
 if (!adr) throw new Error('VITE_BACKEND_URL environment variable not set')
@@ -27,47 +28,52 @@ const socket = io(adr, {
   transports: ['websocket'],
 })
 
-let currentHolder = null
+let currentHolder: QueueEntry | undefined = undefined
 
 export default function App() {
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
-  const [displaySpinner, setDisplaySpinner] = useState(false)
+  const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
-  const [appSettings, setAppSettings] = useState({})
+  const [appSettings, setAppSettings] = useState({ hideLog: false, audioMode: 'tobias' } as UserSettings)
 
   const queue = data.filter(e => isPending(e))
   const audioMode = appSettings['audioMode'] ? '-tob' : ''
 
-  let sounds = {
-    'free' : new Audio(queueFreeSound),
-    'kick' : new Audio(queueKickSound),
-    'free-tob' : new Audio(queueFreeSoundTob),
-    'kick-tob' : new Audio(queueKickSoundTob)
+  const sounds: Record<AudioMode, { free: HTMLAudioElement; kick: HTMLAudioElement }> = {
+    normal: {
+      free: new Audio(queueFreeSound),
+      kick: new Audio(queueKickSound),
+    },
+    tobias: {
+      free: new Audio(queueFreeSoundTob),
+      kick: new Audio(queueKickSoundTob),
+    },
   }
 
   useEffect(() => {
     // Listen for updates from the backend
-    setDisplaySpinner(true)
-    socket.on('stateUpdate', data => {
+    socket.on('stateUpdate', (data: QueueEntry[]) => {
       console.log(timestamp(), 'Recieved update from backend:', data)
-      // If someone is in the queue (and its not the initial data update upon connecting to the site) 
+
+      // If someone is in the queue (and its not the initial data update upon connecting to the site)
       // AND the user at the front of the queue has changed with this update
-      if(currentHolder != null && currentHolder.privateKey != data.filter(e => !e.queueExitTime)[0].privateKey){
+      if (currentHolder != null && currentHolder.privateKey != data.filter(e => !e.queueExitTime)[0].privateKey) {
         let newHolder = data.filter(e => !e.queueExitTime)[0]
         //Play sound if user overtakes queue
         if (newHolder.privateKey === localStorage.getItem('privateKey')) {
           console.log(timestamp(), 'PluginReg is now yours')
-          playAudio(sounds['free'+audioMode])
-        } 
+          playAudio(sounds['free' + audioMode])
+        }
         //Play sound if user is kicked from queue
-        else if (currentHolder.privateKey === localStorage.getItem('privateKey')){
+        else if (currentHolder.privateKey === localStorage.getItem('privateKey')) {
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          playAudio(sounds['kick'+audioMode])
+          playAudio(sounds['kick' + audioMode])
         }
       }
-      currentHolder = data.filter(e => !e.queueExitTime).length > 0 ? data.filter(e => !e.queueExitTime)[0] : null;
+
+      currentHolder = data.filter(e => !e.queueExitTime).length > 0 ? data.filter(e => !e.queueExitTime)[0] : null
       setData(data)
       setDisplaySpinner(false)
     })
@@ -78,18 +84,15 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    let settings = {}
-    if(!localStorage.getItem('userSettings')){
-      settings = {
-        'hideLog' : false,
-        'audioMode' : false
-      }
-      localStorage.setItem('userSettings', JSON.stringify(settings))
-    }else{
-      settings = JSON.parse(localStorage.getItem('userSettings'))
+    const storedSettings = localStorage.getItem('userSettings')
+
+    if (storedSettings) {
+      const parsedSettings = JSON.parse(storedSettings)
+      setAppSettings(parsedSettings)
+      console.debug('Retrieved settings from storage:', parsedSettings)
+    } else {
+      console.debug('No settings found in storage')
     }
-    console.log(settings)
-    setAppSettings(settings)
   }, [])
 
   const addToQueue = (queueEntry: QueueEntry) => {
@@ -149,34 +152,31 @@ export default function App() {
     nameInputRef.current.value = ''
   }
 
-  const playAudio = (sound) => {
-    try{
-      sound.play()
-    }catch(e){
+  const playAudio = async (sound: HTMLAudioElement) => {
+    try {
+      await sound.play()
+    } catch (err) {
+      if (err instanceof Error) {
+        console.warn(timestamp(), err)
+      }
       console.log(timestamp(), 'Cancelled initial audio')
     }
   }
 
   const handleMenuClick = () => {
-    setIsReversed(!isReversed);
+    setIsReversed(!isReversed)
   }
 
-  const setOptions = (opt, value) => {
-    let settings = {
-      'hideLog' : appSettings['hideLog'],
-      'audioMode' : appSettings['audioMode']
-    }
-
-    settings[opt] = value
-    localStorage.setItem('userSettings', JSON.stringify(settings))
-
-    setAppSettings(settings)
-    console.log(appSettings)
+  const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
+    const newSettings = { ...appSettings, [key]: value }
+    localStorage.setItem('userSettings', JSON.stringify(newSettings))
+    setAppSettings(newSettings)
+    console.log(timestamp(), 'Updated settings:', newSettings)
   }
 
   return (
     <div className='App'>
-      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions}/>
+      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions} />
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
         <Spinner />
@@ -223,7 +223,7 @@ export default function App() {
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
 
-      {!appSettings['hideLog'] &&  <HistoryDisplay data={data}/>}
+      {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
     </div>
   )
 }
