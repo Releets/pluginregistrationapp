@@ -5,22 +5,19 @@ WORKDIR /opt/pluginregistrationapp
 
 # Environment variables
 ARG BACKEND_URL
-ENV REACT_APP_BACKEND_URL $BACKEND_URL
+ENV VITE_BACKEND_URL $BACKEND_URL
 
 # PORTS
-EXPOSE 3000
+EXPOSE 5173
 
 # Copy the app to the container
-COPY public public/
-COPY src src/
-COPY package.json .
+COPY client client/
+COPY models models/
+
+WORKDIR /opt/pluginregistrationapp/client
 
 # Install dependencies
-RUN npm install -g serve
-RUN npm install
-
-# Build the app
-RUN npm run build
+RUN npm install -g serve && npm install && npm run build
 
 # Start the app
 CMD [ "serve", "-s", "build" ]

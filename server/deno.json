@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "dev": "deno run --watch --allow-net --allow-read --allow-write --allow-env backend.ts",
+    "start": "deno run --allow-net --allow-read --allow-write --allow-env backend.ts"
+  },
+  "fmt": {
+    "indentWidth": 2,
+    "lineWidth": 120,
+    "semiColons": false,
+    "singleQuote": true,
+    "useTabs": false
+  },
+  "imports": {
+    "@types/express": "npm:@types/express@^5.0.0",
+    "cors": "npm:cors@^2.8.5",
+    "express": "npm:express@^4.21.1",
+    "socket.io": "npm:socket.io@^4.8.0"
+  }
+}

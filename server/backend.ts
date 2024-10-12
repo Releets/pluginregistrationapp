@@ -1,10 +1,10 @@
 import cors from 'cors'
-import express, { json } from 'express'
-import { createServer } from 'http'
+import express, { Express, json, Request, Response } from 'express'
+import { createServer } from 'node:http'
 import { Server } from 'socket.io'
-import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.js'
+import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.ts'
 
-const app = express()
+const app: Express = express()
 const server = createServer(app)
 const io = new Server(server)
 
@@ -13,34 +13,31 @@ const port = 6969
 app.use(cors())
 app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
-app.use(function (_, res, next) {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'Origin', 'X-Requested-With', 'Content-Type')
-  next()
-})
 
 const timestamp = () => new Date().toISOString()
 
 // API to append the queue
-app.post('/add', (req, res) => {
+app.post('/add', (req: Request, res: Response) => {
   try {
     const updatedQueue = enterQueue(req.body.value)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
+    if (!(err instanceof Error)) throw err
     console.error(timestamp(), 'Error adding to queue:', err.message)
     res.status(500).send(err.message)
   }
 })
 
 // API to remove from the queue
-app.post('/remove', (req, res) => {
+app.post('/remove', (req: Request, res: Response) => {
   try {
     const { value, privateKey } = req.body
     const updatedQueue = exitQueue(value, privateKey)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {
+    if (!(err instanceof Error)) throw err
     console.error(timestamp(), 'Error removing from queue:', err.message)
     res.status(500).send(err.message)
   }
