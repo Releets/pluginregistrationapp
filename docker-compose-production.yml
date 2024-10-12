@@ -1,0 +1,20 @@
+services:
+  frontend:
+    container_name: client
+    build:
+      dockerfile: client.dockerfile
+      args:
+        BACKEND_URL: http://localhost:6969
+    ports:
+      - '5173:5173'
+    restart: always
+
+  backend:
+    container_name: server
+    build:
+      dockerfile: server.dockerfile
+    ports:
+      - '6969:6969'
+    restart: always
+    volumes:
+      - ./data:/opt/pluginregistrationapp/data

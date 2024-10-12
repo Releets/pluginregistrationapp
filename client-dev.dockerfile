@@ -4,15 +4,16 @@ FROM node:22-alpine
 WORKDIR /opt/pluginregistrationapp
 
 # Environment variables
-ENV REACT_APP_BACKEND_URL http://localhost:6969
+ENV VITE_BACKEND_URL http://localhost:6969
 
 # PORTS
-EXPOSE 3000
+EXPOSE 5173
 
 # Copy the app to the container
-COPY public public/
-COPY src src/
-COPY package.json .
+COPY client client/
+COPY models models/
+
+WORKDIR /opt/pluginregistrationapp/client
 
 # Install dependencies and run
 RUN npm install

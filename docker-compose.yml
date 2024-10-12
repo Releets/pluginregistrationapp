@@ -2,36 +2,43 @@ services:
   frontend:
     container_name: client
     build:
-      context: ./client
-      dockerfile: dockerfile-dev
+      dockerfile: ./client-dev.dockerfile
       args:
         BACKEND_URL: http://localhost:6969
     develop:
       watch:
         - action: sync
           path: ./client
-          target: /opt/pluginregistrationapp/
+          target: /opt/pluginregistrationapp/client
           ignore:
             - node_modules/
+        - action: sync
+          path: ./models
+          target: /opt/pluginregistrationapp/models
         - action: rebuild
-          path: ./client/package.json
+          path: ./client-dev.dockerfile
         - action: rebuild
-          path: ./client/dockerfile-dev
+          path: ./client/*.{js,ts,json}
     ports:
-      - "3000:3000"
+      - '5173:5173'
     restart: always
-  
+
   backend:
     container_name: server
     build:
-      context: ./server
-      dockerfile: dockerfile
+      dockerfile: ./server-dev.dockerfile
     develop:
       watch:
-        - action: rebuild
+        - action: sync
           path: ./server
+          target: /opt/pluginregistrationapp/server
+          ignore:
+            - node_modules/
+        - action: sync
+          path: ./models
+          target: /opt/pluginregistrationapp/models
     ports:
-      - "6969:6969"
+      - '6969:6969'
     restart: always
     volumes:
       - ./data:/opt/pluginregistrationapp/data

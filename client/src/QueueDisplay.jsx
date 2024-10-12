@@ -8,7 +8,7 @@ QueueDisplay.propTypes = {
 
 export default function QueueDisplay({ leaveQueueFunction, items }) {
   const formattedFinishTime = entry =>
-    new Date(entry.entrytime + entry.estimated * 60 * 60 * 1000).toLocaleTimeString([], {
+    new Date(entry.entered + entry.estimated * 60 * 60 * 1000).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
     })
@@ -16,7 +16,7 @@ export default function QueueDisplay({ leaveQueueFunction, items }) {
   return (
     <div className='queue'>
       {items
-        .sort((a, b) => a.entrytime - b.entrytime)
+        .sort((a, b) => a.entered - b.entered)
         .map((item, i) => (
           <div key={item.username}>
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>

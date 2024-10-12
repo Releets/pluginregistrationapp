@@ -1,7 +1,8 @@
-import axios from 'axios'
-import { useEffect, useRef, useState } from 'react'
+import axios, { AxiosError } from 'axios'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
+import { isPending, QueueEntry } from '../../models/QueueEntry'
 import './App.css'
 import check from './icons/check.svg'
 import cross from './icons/cross.svg'
@@ -10,14 +11,13 @@ import HistoryDisplay from './HistoryDisplay'
 import QueueDisplay from './QueueDisplay'
 import Spinner from './Spinner'
 import NavMenu from './NavMenu'
-
 import queueFreeSound from './audio/queue_free.mp3'
 import queueKickSound from './audio/queue_kick.mp3'
 import queueFreeSoundTob from './audio/queue_free_tob.mp3'
 import queueKickSoundTob from './audio/queue_kick_tob.mp3'
 
-const adr = process.env.REACT_APP_BACKEND_URL
-if (!adr) throw new Error('REACT_APP_BACKEND_URL environment variable not set')
+const adr = import.meta.env.VITE_BACKEND_URL
+if (!adr) throw new Error('VITE_BACKEND_URL environment variable not set')
 
 const timestamp = () => new Date().toISOString()
 
@@ -29,17 +29,15 @@ const socket = io(adr, {
 
 let currentHolder = null
 
-
 export default function App() {
-  const [data, setData] = useState([])
+  const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
   const [displaySpinner, setDisplaySpinner] = useState(false)
   const [isReversed, setIsReversed] = useState(true)
   const [appSettings, setAppSettings] = useState({})
 
-  const queue = data.filter(e => !e.queueExitTime)
-  const history = data.filter(e => !!e.queueExitTime)
+  const queue = data.filter(e => isPending(e))
   const audioMode = appSettings['audioMode'] ? '-tob' : ''
 
   let sounds = {
@@ -80,16 +78,13 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!localStorage.getItem('privateKey')) {
-      localStorage.setItem('privateKey', uuidv4())
-    }
     let settings = {}
     if(!localStorage.getItem('userSettings')){
       settings = {
         'hideLog' : false,
         'audioMode' : false
       }
-      localStorage.setItem(JSON.stringify(settings))
+      localStorage.setItem('userSettings', JSON.stringify(settings))
     }else{
       settings = JSON.parse(localStorage.getItem('userSettings'))
     }
@@ -97,81 +92,61 @@ export default function App() {
     setAppSettings(settings)
   }, [])
 
-  const addToQueue = user => {
-    console.log(timestamp(), 'Adding ' + user + ' to queue')
-    axios.post(adr + '/add', { value: user }).catch(e => {
+  const addToQueue = (queueEntry: QueueEntry) => {
+    console.log(timestamp(), 'Adding ' + queueEntry.username + ' to queue')
+    axios.post(adr + '/add', { value: queueEntry }).catch(e => {
       console.warn(timestamp(), e)
       alert(e.response.data)
     })
   }
 
-  const removeFromQueue = async user => {
-    console.log(timestamp(), 'Removing ' + user + ' from queue')
+  const removeFromQueue = async (user: QueueEntry) => {
+    console.log(timestamp(), 'Removing ' + user.username + ' from queue')
     try {
       await axios.post(adr + '/remove', {
         value: user,
         privateKey: localStorage.getItem('privateKey'),
       })
     } catch (e) {
+      if (!(e instanceof AxiosError)) throw e
       console.warn(timestamp(), e)
-      alert(e.response.data)
+      alert(e.response?.data)
     }
   }
 
-  const initialsInputRef = useRef()
-  const timeInputRef = useRef()
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const timeInputRef = useRef<HTMLSelectElement>(null)
 
-  function leaveQueue(index) {
+  function leaveQueue(index: number) {
     removeFromQueue(queue[index])
   }
 
-  function displayExitModal(index) {
+  function displayExitModal(index: number) {
     setCurrentModalUserIndex(index)
     setDisplayModal(true)
   }
 
-  function closeExitModal(userDidConfirm) {
+  function closeExitModal(userDidConfirm: boolean) {
     if (userDidConfirm) {
       leaveQueue(currentModalUserIndex)
     }
     setDisplayModal(false)
   }
 
-  const handleSubmit = event => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
+    const nameInput = nameInputRef.current?.value
+    const timeInput = timeInputRef.current?.value
 
-    if (!initialsInputRef.current.value) {
-      return
-    }
-    if (initialsInputRef.current.value.length > 7) {
-      initialsInputRef.current.value = ''
-      timeInputRef.current.value = ''
-      initialsInputRef.current.placeholder = 'For mange tegn!'
-      initialsInputRef.current.className = 'textinput wronginput'
-      return
-    }
+    if (!nameInput || nameInput.length === 0) return
 
-    if (timeInputRef.current.value > 8) {
-      initialsInputRef.current.value = ''
-      timeInputRef.current.value = ''
-      timeInputRef.current.placeholder = 'Maks 8 timer'
-      timeInputRef.current.className = 'textinput wronginput'
-      return
-    }
+    addToQueue({
+      id: getPrivateKey(),
+      username: nameInputRef.current.value,
+      estimated: parseInt(timeInput ?? '1'),
+    })
 
-    initialsInputRef.current.placeholder = 'Dine initialer'
-    initialsInputRef.current.className = 'textinput'
-    timeInputRef.current.placeholder = 'Estimert tidsbrukt'
-    timeInputRef.current.className = 'textinput'
-
-    const entry = {
-      username: initialsInputRef.current.value,
-      estimated: parseInt(timeInputRef.current.value ?? 1),
-      privateKey: localStorage.getItem('privateKey'),
-    }
-
-    addToQueue(entry)
-    initialsInputRef.current.value = ''
+    nameInputRef.current.value = ''
   }
 
   const playAudio = (sound) => {
@@ -181,7 +156,7 @@ export default function App() {
       console.log(timestamp(), 'Cancelled initial audio')
     }
   }
-  
+
   const handleMenuClick = () => {
     setIsReversed(!isReversed);
   }
@@ -191,12 +166,13 @@ export default function App() {
       'hideLog' : appSettings['hideLog'],
       'audioMode' : appSettings['audioMode']
     }
+
     settings[opt] = value
     localStorage.setItem('userSettings', JSON.stringify(settings))
+
     setAppSettings(settings)
     console.log(appSettings)
   }
-  
 
   return (
     <div className='App'>
@@ -225,7 +201,7 @@ export default function App() {
 
       <form className='queueForm' onSubmit={handleSubmit}>
         <div>
-          <input type='text' placeholder='Dine initialer' className='textinput' ref={initialsInputRef} />
+          <input type='text' placeholder='Ditt navn' className='textinput' ref={nameInputRef} maxLength={7} />
           <select className='textinput selectinput' ref={timeInputRef}>
             <option value='1'>1 time</option>
             <option value='2'>2 timer</option>
@@ -247,7 +223,16 @@ export default function App() {
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
 
-      {(history.length > 0 && !appSettings['hideLog']) &&  <HistoryDisplay queue={history}/>}
+      {!appSettings['hideLog'] &&  <HistoryDisplay data={data}/>}
     </div>
   )
+}
+
+function getPrivateKey() {
+  let privateKey = localStorage.getItem('privateKey')
+  if (!privateKey) {
+    privateKey = uuidv4()
+    localStorage.setItem('privateKey', privateKey)
+  }
+  return privateKey
 }
