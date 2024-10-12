@@ -72,3 +72,23 @@ export function exitQueue(toRemove, privateKey, force = false) {
   console.log(new Date(data[i].queueExitTime).toISOString(), 'Removed ' + toRemove.username + ' from queue')
   return data
 }
+
+export function removeOldEntries() {
+  const data = loadData()
+  const queue = data.filter(entry => !entry.queueExitTime)
+
+  const currentTime = new Date(Date.now())
+
+  queue.forEach(entry => {
+    const kickTime = new Date(entry.entrytime + entry.estimated * 60 * 60 * 1000)
+    if (kickTime < currentTime) {
+      try {
+        exitQueue(entry, undefined, true)
+      } catch (err) {
+        console.error(timestamp(), err.message)
+      }
+    }
+  })
+
+  return loadData()
+}

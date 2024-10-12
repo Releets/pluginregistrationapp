@@ -1,26 +1,16 @@
 import axios from 'axios'
-import io from 'socket.io-client'
-import check from './icons/check.svg'
-import cross from './icons/cross.svg'
-import { v4 as uuidv4 } from 'uuid'
-
-import ExitModal from './ExitModal'
-import QueueDisplay from './QueueDisplay'
-import HistoryDisplay from './HistoryDisplay'
-import Spinner from './Spinner'
-
-import queueFreeSound from './audio/queue_free.mp3'
-import queueKickSound from './audio/queue_kick.mp3'
-import queueFreeSoundTob from './audio/queue_free_tob.mp3'
-import queueKickSoundTob from './audio/queue_kick_tob.mp3'
-
-import './styles/App.css'
-
 import { useEffect, useRef, useState } from 'react'
-import NavMenu from './NavMenu'
+import io from 'socket.io-client'
+import { v4 as uuidv4 } from 'uuid'
+import './App.css'
+import check from './check.svg'
+import cross from './cross.svg'
+import ExitModal from './ExitModal'
+import HistoryDisplay from './HistoryDisplay'
+import QueueDisplay from './QueueDisplay'
 
-const adr = 'https://pluginreg-api.kallerud.no'
-if (!adr) throw new Error('REACT_APP_SERVER_URL environment variable not set')
+const adr = process.env.REACT_APP_BACKEND_URL
+if (!adr) throw new Error('REACT_APP_BACKEND_URL environment variable not set')
 
 const timestamp = () => new Date().toISOString()
 

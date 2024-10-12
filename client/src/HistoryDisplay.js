@@ -1,5 +1,6 @@
 import './styles/HistoryDisplay.css'
 import PropTypes from 'prop-types'
+import './HistoryDisplay.css'
 import { formatDate } from './utils'
 
 HistoryDisplay.propTypes = {

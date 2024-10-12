@@ -1,15 +1,14 @@
-import express, { json } from 'express'
-import { Server } from 'socket.io'
-import { createServer } from 'http'
 import cors from 'cors'
-import { enterQueue, exitQueue, loadData } from './dataService.js'
+import express, { json } from 'express'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.js'
 
 const app = express()
 const server = createServer(app)
 const io = new Server(server)
 
 const port = 6969
-if (!port) throw new Error('SERVER_PORT environment variable not set')
 
 app.use(cors())
 app.use(json())
@@ -48,29 +47,16 @@ app.post('/remove', (req, res) => {
 })
 
 io.on('connection', socket => {
-  console.log(timestamp(), 'Connected', socket.id)
+  console.debug(timestamp(), 'Connected', socket.id)
   socket.emit('stateUpdate', loadData()) // Send the current state to newly connected client
   socket.on('disconnect', () => {
-    console.log(timestamp(), 'Disconnected', socket.id)
+    console.debug(timestamp(), 'Disconnected', socket.id)
   })
 })
 
 server.listen(port, () => {
   console.log(timestamp(), 'Server is running on port', port)
 
-  // Throwing people out of queue
-  setInterval(() => {
-    const data = loadData()
-    data
-      .filter(entry => entry.estimatedFinishTime < Date.now() && !entry.queueExitTime)
-      .forEach(entry => {
-        try {
-          exitQueue(entry, undefined, true)
-        } catch (err) {
-          console.error(timestamp(), err.message)
-        }
-      })
-
-    io.emit('stateUpdate', data) // Broadcast the updated state to all clients
-  }, 1000 * 60)
+  // Throwing people out of queue every minute
+  setInterval(() => io.emit('stateUpdate', removeOldEntries()), 1000 * 60)
 })
