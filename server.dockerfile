@@ -22,4 +22,4 @@ RUN deno install
 EXPOSE 6969
 
 # Start the app
-CMD [ "task", "start" ]
+CMD [ "task", "run" ]

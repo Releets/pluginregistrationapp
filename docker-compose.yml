@@ -16,8 +16,6 @@ services:
           path: ./models
           target: /opt/pluginregistrationapp/models
         - action: rebuild
-          path: ./client/*.json
-        - action: rebuild
           path: ./client-dev.dockerfile
         - action: rebuild
           path: ./client/*.{js,ts,json}

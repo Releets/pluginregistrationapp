@@ -1,7 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-read --allow-write --allow-env backend.ts",
-    "start": "deno run --allow-net --allow-read --allow-write --allow-env backend.ts"
+    "run": "deno run --allow-net --allow-read --allow-write --allow-env backend.ts"
   },
   "fmt": {
     "indentWidth": 2,

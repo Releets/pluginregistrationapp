@@ -2,16 +2,13 @@ import axios, { AxiosError } from 'axios'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
+import { isPending, QueueEntry } from '../../models/QueueEntry'
 import './App.css'
+import check from './check.svg'
+import cross from './cross.svg'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
 import QueueDisplay from './QueueDisplay'
-import { isPending, QueueEntry } from '../../models/QueueEntry'
-
-//@ts-ignore
-import check from './check.svg'
-//@ts-ignore
-import cross from './cross.svg'
 
 const adr = import.meta.env.VITE_BACKEND_URL
 if (!adr) throw new Error('VITE_BACKEND_URL environment variable not set')
