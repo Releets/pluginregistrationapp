@@ -23,6 +23,9 @@ export type QueueEntryCurrent = QueueEntry & {
   entered: number
   exited: undefined
 }
+/**
+ * Checks if a given entry is the current holder.
+ */
 export function isCurrent(entry: QueueEntry): entry is QueueEntryCurrent {
   return entry.exited === undefined && entry.entered !== undefined
 }

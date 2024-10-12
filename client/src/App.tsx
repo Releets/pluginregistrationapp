@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
-import { isPending, QueueEntry } from '../../models/QueueEntry'
+import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { UserSettings, AudioMode } from '../../models/UserSettings'
 import './App.css'
 import ExitModal from './ExitModal'
@@ -28,7 +28,7 @@ const socket = io(adr, {
   transports: ['websocket'],
 })
 
-let currentHolder: QueueEntry | undefined = undefined
+let currentHolder: QueueEntryCurrent | undefined = undefined
 
 export default function App() {
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -39,7 +39,6 @@ export default function App() {
   const [appSettings, setAppSettings] = useState({ hideLog: false, audioMode: 'tobias' } as UserSettings)
 
   const queue = data.filter(e => isPending(e))
-  const audioMode = appSettings['audioMode'] ? '-tob' : ''
 
   const sounds: Record<AudioMode, { free: HTMLAudioElement; kick: HTMLAudioElement }> = {
     normal: {
@@ -54,27 +53,25 @@ export default function App() {
 
   useEffect(() => {
     // Listen for updates from the backend
-    socket.on('stateUpdate', (data: QueueEntry[]) => {
-      console.log(timestamp(), 'Recieved update from backend:', data)
+    socket.on('stateUpdate', (newState: QueueEntry[]) => {
+      console.log(timestamp(), 'Recieved update from backend:', newState)
 
-      // If someone is in the queue (and its not the initial data update upon connecting to the site)
-      // AND the user at the front of the queue has changed with this update
-      if (currentHolder != null && currentHolder.privateKey != data.filter(e => !e.queueExitTime)[0].privateKey) {
-        let newHolder = data.filter(e => !e.queueExitTime)[0]
-        //Play sound if user overtakes queue
-        if (newHolder.privateKey === localStorage.getItem('privateKey')) {
-          console.log(timestamp(), 'PluginReg is now yours')
-          playAudio(sounds['free' + audioMode])
-        }
-        //Play sound if user is kicked from queue
-        else if (currentHolder.privateKey === localStorage.getItem('privateKey')) {
-          console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          playAudio(sounds['kick' + audioMode])
-        }
+      const newHolder = newState.find(entry => isCurrent(entry))
+
+      // If you are the current holder and someone else replaces you
+      if (currentHolder?.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
+        console.log(timestamp(), 'Removed from queue due to alloted timeslot')
+        playAudio(sounds[appSettings.audioMode].kick)
       }
 
-      currentHolder = data.filter(e => !e.queueExitTime).length > 0 ? data.filter(e => !e.queueExitTime)[0] : null
-      setData(data)
+      // If you are not the current holder and you replace someone else
+      if (currentHolder?.id !== getPrivateKey() && newHolder?.id === getPrivateKey()) {
+        console.log(timestamp(), 'PluginReg is now yours')
+        playAudio(sounds[appSettings.audioMode].free)
+      }
+
+      currentHolder = newHolder
+      setData(newState)
       setDisplaySpinner(false)
     })
 
@@ -121,6 +118,7 @@ export default function App() {
   const timeInputRef = useRef<HTMLSelectElement>(null)
 
   function leaveQueue(index: number) {
+    currentHolder = undefined
     removeFromQueue(queue[index])
   }
 
