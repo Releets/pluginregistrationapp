@@ -31,7 +31,7 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
           </li>
         </ul>
         <p>Want to report a bug or suggest a feature?</p>
-          <a href='https://github.com/Releets/pluginregistrationapp' target='_blank'>Create an issue here</a>
+          <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank'>Create an issue here</a>
       </div>
     </div>
   )
