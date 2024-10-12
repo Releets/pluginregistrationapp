@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import './HistoryDisplay.css'
-import { formatDate } from './utils'
 
 HistoryDisplay.propTypes = {
   queue: PropTypes.array.isRequired,
@@ -35,5 +34,18 @@ function HistoryEntry({ item }) {
       <div className='username'>{item.username}</div>
       <div className='timestamp'>{formatDate(item.queueExitTime)}</div>
     </div>
+  )
+}
+
+function formatDate(date = Date.now()) {
+  date = new Date(date)
+  return (
+    date.getDate() +
+    ' ' +
+    date.toLocaleString('default', { month: 'short' }) +
+    ' | ' +
+    date.getHours() +
+    ':' +
+    String(date.getMinutes()).padStart(2, '0')
   )
 }
