@@ -11,4 +11,7 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  build: {
+    outDir: 'build',
+  },
 })

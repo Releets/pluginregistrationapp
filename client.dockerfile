@@ -19,5 +19,5 @@ WORKDIR /opt/pluginregistrationapp/client
 # Install dependencies
 RUN npm install -g serve && npm install && npm run build
 
-# Start the app
-CMD [ "serve", "-s", "build" ]
+# Run the build
+CMD [ "serve", "-l", "5173", "-s", "build" ]
