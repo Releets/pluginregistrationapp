@@ -64,8 +64,8 @@ export default function App() {
         playAudio(sounds[appSettings.audioMode].kick)
       }
 
-      // If you are not the current holder and you replace someone else
-      if (currentHolder?.id !== getPrivateKey() && newHolder?.id === getPrivateKey()) {
+      // If you are the new current holder
+      if (newHolder?.id === getPrivateKey()) {
         console.log(timestamp(), 'PluginReg is now yours')
         playAudio(sounds[appSettings.audioMode].free)
       }
