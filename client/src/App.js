@@ -1,15 +1,13 @@
 import axios from 'axios'
+import { useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
+import { v4 as uuidv4 } from 'uuid'
+import './App.css'
 import check from './check.svg'
 import cross from './cross.svg'
-import { v4 as uuidv4 } from 'uuid'
-
 import ExitModal from './ExitModal'
-import QueueDisplay from './QueueDisplay'
-
-import { useEffect, useRef, useState } from 'react'
-import './App.css'
 import HistoryDisplay from './HistoryDisplay'
+import QueueDisplay from './QueueDisplay'
 
 const adr = process.env.REACT_APP_BACKEND_URL
 if (!adr) throw new Error('REACT_APP_BACKEND_URL environment variable not set')
