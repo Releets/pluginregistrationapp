@@ -84,7 +84,7 @@ export default function App() {
         'hideLog' : false,
         'audioMode' : false
       }
-      localStorage.setItem(JSON.stringify(settings))
+      localStorage.setItem('userSettings', JSON.stringify(settings))
     }else{
       settings = JSON.parse(localStorage.getItem('userSettings'))
     }
