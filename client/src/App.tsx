@@ -51,23 +51,31 @@ export default function App() {
     },
   }
 
+  const appSettingsRef = useRef(appSettings);
+
+  // Use a useEffect to update the ref whenever userSettings changes
+  useEffect(() => {
+    appSettingsRef.current = appSettings;
+  }, [appSettings]);
+
   useEffect(() => {
     // Listen for updates from the backend
     socket.on('stateUpdate', (newState: QueueEntry[]) => {
       console.log(timestamp(), 'Recieved update from backend:', newState)
-
       const newHolder = newState.find(entry => isCurrent(entry))
-
-      // If you are the current holder and someone else replaces you
-      if (currentHolder?.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
-        console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-        playAudio(sounds[appSettings.audioMode].kick)
-      }
-
-      // If you are the new current holder
-      if (newHolder?.id === getPrivateKey()) {
-        console.log(timestamp(), 'PluginReg is now yours')
-        playAudio(sounds[appSettings.audioMode].free)
+      // Skip if you are loading the page
+      if(currentHolder){
+        // If you are the current holder and someone else replaces you
+        if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
+          console.log(timestamp(), 'Removed from queue due to alloted timeslot')
+          playAudio(sounds[appSettingsRef.current.audioMode].kick)
+        }
+  
+        // If you are the new current holder and someone else had it before you
+        if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
+          console.log(timestamp(), 'PluginReg is now yours')
+          playAudio(sounds[appSettingsRef.current.audioMode].free)
+        }
       }
 
       currentHolder = newHolder
@@ -82,7 +90,6 @@ export default function App() {
 
   useEffect(() => {
     const storedSettings = localStorage.getItem('userSettings')
-
     if (storedSettings) {
       const parsedSettings = JSON.parse(storedSettings)
       setAppSettings(parsedSettings)
@@ -102,6 +109,9 @@ export default function App() {
 
   const removeFromQueue = async (user: QueueEntry) => {
     console.log(timestamp(), 'Removing ' + user.username + ' from queue')
+    if (currentHolder?.id === getPrivateKey()) {
+      currentHolder = undefined
+    }
     try {
       await axios.post(adr + '/remove', {
         value: user,
@@ -174,7 +184,7 @@ export default function App() {
 
   return (
     <div className='App'>
-      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions} />
+      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions} userAppSettings={appSettings}/>
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
         <Spinner />
