@@ -55,10 +55,9 @@ export default function App() {
     // Listen for updates from the backend
     socket.on('stateUpdate', (newState: QueueEntry[]) => {
       console.log(timestamp(), 'Recieved update from backend:', newState)
-
       const newHolder = newState.find(entry => isCurrent(entry))
       // Skip if you are loading the page
-      if(currentHolder != undefined){
+      if(currentHolder){
         // If you are the current holder and someone else replaces you
         if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
@@ -66,7 +65,7 @@ export default function App() {
         }
   
         // If you are the new current holder and someone else had it before you
-        if (newHolder?.id === getPrivateKey() && currentHolder.id != getPrivateKey()) {
+        if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
           console.log(timestamp(), 'PluginReg is now yours')
           playAudio(sounds[appSettings.audioMode].free)
         }
@@ -103,7 +102,7 @@ export default function App() {
 
   const removeFromQueue = async (user: QueueEntry) => {
     console.log(timestamp(), 'Removing ' + user.username + ' from queue')
-    if(currentHolder?.id === getPrivateKey()){
+    if (currentHolder?.id === getPrivateKey()) {
       currentHolder = undefined
     }
     try {
