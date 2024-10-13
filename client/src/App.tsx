@@ -80,7 +80,7 @@ export default function App() {
     return () => {
       socket.off('stateUpdate')
     }
-  }, [])
+  }, [appSettings])
 
   useEffect(() => {
     const storedSettings = localStorage.getItem('userSettings')
@@ -172,7 +172,7 @@ export default function App() {
   const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
     const newSettings = { ...appSettings, [key]: value }
     localStorage.setItem('userSettings', JSON.stringify(newSettings))
-    setAppSettings(newSettings)
+    setAppSettings((prevSettings) =>({...prevSettings, [key]: value}))
     console.log(timestamp(), 'Updated settings:', newSettings)
   }
 
