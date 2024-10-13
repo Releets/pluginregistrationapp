@@ -5,9 +5,10 @@ NavMenu.propTypes = {
   isReversed : PropTypes.bool.isRequired,
   handleClick : PropTypes.func.isRequired,
   handleOptionToggle : PropTypes.func.isRequired,
+  userAppSettings : PropTypes.object.isRequired
 }
 
-export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
+export default function NavMenu({isReversed, handleClick, handleOptionToggle, userAppSettings}) {
   return (
     <div className='navmenuwrapper'>
       <div className={`burger ${isReversed ? 'reverse' : 'animate'}`} onClick={handleClick}>
@@ -19,13 +20,13 @@ export default function NavMenu({isReversed, handleClick, handleOptionToggle}) {
         <ul className='options'>
           <li>
           <div className="checkbox-wrapper">
-            <input type="checkbox" className="check" onChange={e => handleOptionToggle('hideLog', e.target.checked)}/>
+            <input type="checkbox" className="check" checked={userAppSettings.hideLog} onChange={e => handleOptionToggle('hideLog', e.target.checked)}/>
             <label>Hide Log</label>
           </div>
           </li>
           <li>
           <div className="checkbox-wrapper">
-            <input type="checkbox" className="check" onChange={e => handleOptionToggle('audioMode', e.target.checked ? "tobias" : "normal")}/>
+            <input type="checkbox" className="check" checked={userAppSettings.audioMode === 'tobias'} onChange={e => handleOptionToggle('audioMode', e.target.checked ? "tobias" : "normal")}/>
             <label>Tobias Mode</label>
           </div>
           </li>
