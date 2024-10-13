@@ -3,9 +3,6 @@ FROM denoland/deno:2.0.0
 # Set the working directory
 WORKDIR /opt/pluginregistrationapp
 
-# Prefer not to run as root.
-USER deno
-
 # Define data volume
 VOLUME [ "/opt/pluginregistrationapp/data" ]
 
