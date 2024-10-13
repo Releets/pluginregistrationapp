@@ -51,6 +51,13 @@ export default function App() {
     },
   }
 
+  const appSettingsRef = useRef(appSettings);
+
+  // Use a useEffect to update the ref whenever userSettings changes
+  useEffect(() => {
+    appSettingsRef.current = appSettings;
+  }, [appSettings]);
+
   useEffect(() => {
     // Listen for updates from the backend
     socket.on('stateUpdate', (newState: QueueEntry[]) => {
@@ -61,13 +68,13 @@ export default function App() {
         // If you are the current holder and someone else replaces you
         if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          playAudio(sounds[appSettings.audioMode].kick)
+          playAudio(sounds[appSettingsRef.current.audioMode].kick)
         }
   
         // If you are the new current holder and someone else had it before you
         if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
           console.log(timestamp(), 'PluginReg is now yours')
-          playAudio(sounds[appSettings.audioMode].free)
+          playAudio(sounds[appSettingsRef.current.audioMode].free)
         }
       }
 
@@ -79,7 +86,7 @@ export default function App() {
     return () => {
       socket.off('stateUpdate')
     }
-  }, [appSettings])
+  }, [])
 
   useEffect(() => {
     const storedSettings = localStorage.getItem('userSettings')
@@ -171,7 +178,7 @@ export default function App() {
   const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
     const newSettings = { ...appSettings, [key]: value }
     localStorage.setItem('userSettings', JSON.stringify(newSettings))
-    setAppSettings((prevSettings) =>({...prevSettings, [key]: value}))
+    setAppSettings(newSettings)
     console.log(timestamp(), 'Updated settings:', newSettings)
   }
 
