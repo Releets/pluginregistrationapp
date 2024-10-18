@@ -36,7 +36,7 @@ export default function App() {
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
-  const [appSettings, setAppSettings] = useState({ hideLog: false, audioMode: 'tobias' } as UserSettings)
+  const [appSettings, setAppSettings] = useState({ hideLog: false, audioMode: 'normal' } as UserSettings)
 
   const queue = data.filter(e => isPending(e))
 
