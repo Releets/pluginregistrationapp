@@ -7,7 +7,7 @@ export type QueueEntry = {
 }
 
 export function isSame(a: QueueEntry, b: QueueEntry): boolean {
-  return a.id === b.id && a.entered === b.entered
+  return a.id === b.id && a.username === b.username && a.entered === b.entered
 }
 
 export type QueueEntryPending = QueueEntry & { exited: undefined }

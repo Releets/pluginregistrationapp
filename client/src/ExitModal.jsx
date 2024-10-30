@@ -7,11 +7,11 @@ function ExitModal(props) {
         <button className='closeButton' onClick={() => props.closeModalFunction(false)}>
           X
         </button>
-        <p className='modalContent'>
+        <div className='modalContent'>
           Er du sikker på at du vil trekke <br></br>
           <h2 className='focusText'>{props.displayItem}</h2>
           fra køen?
-        </p>
+        </div>
         <button className='confirmButton' onClick={() => props.closeModalFunction(true)}>
           Bekreft
         </button>

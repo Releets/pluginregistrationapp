@@ -33,6 +33,8 @@ app.post('/add', (req: Request, res: Response) => {
 app.post('/remove', (req: Request, res: Response) => {
   try {
     const { value, privateKey } = req.body
+    console.debug(timestamp(), 'Received remove request:', value, privateKey)
+
     const updatedQueue = exitQueue(value, privateKey)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
@@ -55,5 +57,15 @@ server.listen(port, () => {
   console.log(timestamp(), 'Server is running on port', port)
 
   // Throwing people out of queue every minute
-  setInterval(() => io.emit('stateUpdate', removeOldEntries()), 1000 * 60)
+  setInterval(() => {
+    console.debug(timestamp(), 'Checking for old entries')
+
+    const newState = removeOldEntries()
+    if (newState) {
+      console.debug(timestamp(), 'Removed entries, broadcasting new state')
+      io.emit('stateUpdate', newState)
+    } else {
+      console.debug(timestamp(), 'No entries were removed')
+    }
+  }, 1000 * 60)
 })
