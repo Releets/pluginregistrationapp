@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
-import { UserSettings, AudioMode } from '../../models/UserSettings'
+import { UserSettings, AudioMode, defaultSettings } from '../../models/UserSettings'
 import './App.css'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
@@ -36,7 +36,7 @@ export default function App() {
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
-  const [appSettings, setAppSettings] = useState({ hideLog: false, audioMode: 'tobias' } as UserSettings)
+  const [appSettings, setAppSettings] = useState(defaultSettings)
 
   const queue = data.filter(e => isPending(e))
 
@@ -116,6 +116,7 @@ export default function App() {
       await axios.post(adr + '/remove', {
         value: user,
         privateKey: getPrivateKey(),
+        godmodePassword: appSettingsRef.current.godmodePassword,
       })
     } catch (e) {
       if (!(e instanceof AxiosError)) throw e
@@ -174,7 +175,7 @@ export default function App() {
     const newSettings = { ...appSettings, [key]: value }
     localStorage.setItem('userSettings', JSON.stringify(newSettings))
     setAppSettings(newSettings)
-    console.log(timestamp(), 'Updated settings:', newSettings)
+    console.debug(timestamp(), 'Updated settings:', newSettings)
   }
 
   return (
@@ -182,7 +183,7 @@ export default function App() {
       <NavMenu
         isReversed={isReversed}
         handleClick={handleMenuClick}
-        handleOptionToggle={setOptions}
+        handleOption={setOptions}
         userAppSettings={appSettings}
       />
       <div className='banner'>Er Plugin Registration ledig?</div>

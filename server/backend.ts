@@ -3,6 +3,10 @@ import express, { Express, json, Request, Response } from 'express'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.ts'
+import process from 'node:process'
+
+const correctGodmodePassword = process.env.GODMODE
+if (!correctGodmodePassword) throw new Error('GODMODE environment variable not set')
 
 const app: Express = express()
 const server = createServer(app)
@@ -32,10 +36,10 @@ app.post('/add', (req: Request, res: Response) => {
 // API to remove from the queue
 app.post('/remove', (req: Request, res: Response) => {
   try {
-    const { value, privateKey } = req.body
-    console.debug(timestamp(), 'Received remove request:', value, privateKey)
+    const { value, privateKey, godmodePassword } = req.body
+    console.debug(timestamp(), 'Received remove request:', req.body)
 
-    const updatedQueue = exitQueue(value, privateKey)
+    const updatedQueue = exitQueue(value, privateKey, godmodePassword === correctGodmodePassword)
     io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
     res.sendStatus(200)
   } catch (err) {

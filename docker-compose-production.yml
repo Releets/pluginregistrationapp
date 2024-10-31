@@ -15,6 +15,8 @@ services:
       dockerfile: server.dockerfile
     ports:
       - '6969:6969'
+    environment:
+      GODMODE: admin
     restart: always
     volumes:
       - ./data:/opt/pluginregistrationapp/data

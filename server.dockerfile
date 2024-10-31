@@ -6,6 +6,8 @@ WORKDIR /opt/pluginregistrationapp
 # Define data volume
 VOLUME [ "/opt/pluginregistrationapp/data" ]
 
+ENV GODMODE password
+
 # Copy the app to the container
 COPY server server/
 COPY models models/
