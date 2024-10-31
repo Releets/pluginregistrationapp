@@ -51,26 +51,27 @@ export default function App() {
     },
   }
 
-  const appSettingsRef = useRef(appSettings);
+  const appSettingsRef = useRef(appSettings)
 
   // Use a useEffect to update the ref whenever userSettings changes
   useEffect(() => {
-    appSettingsRef.current = appSettings;
-  }, [appSettings]);
+    appSettingsRef.current = appSettings
+  }, [appSettings])
 
   useEffect(() => {
     // Listen for updates from the backend
     socket.on('stateUpdate', (newState: QueueEntry[]) => {
-      console.log(timestamp(), 'Recieved update from backend:', newState)
+      console.debug(timestamp(), 'Recieved update from backend')
       const newHolder = newState.find(entry => isCurrent(entry))
+
       // Skip if you are loading the page
-      if(currentHolder){
+      if (currentHolder) {
         // If you are the current holder and someone else replaces you
         if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
           playAudio(sounds[appSettingsRef.current.audioMode].kick)
         }
-  
+
         // If you are the new current holder and someone else had it before you
         if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
           console.log(timestamp(), 'PluginReg is now yours')
@@ -109,13 +110,12 @@ export default function App() {
 
   const removeFromQueue = async (user: QueueEntry) => {
     console.log(timestamp(), 'Removing ' + user.username + ' from queue')
-    if (currentHolder?.id === getPrivateKey()) {
-      currentHolder = undefined
-    }
+    currentHolder = undefined
+
     try {
       await axios.post(adr + '/remove', {
         value: user,
-        privateKey: localStorage.getItem('privateKey'),
+        privateKey: getPrivateKey(),
       })
     } catch (e) {
       if (!(e instanceof AxiosError)) throw e
@@ -127,11 +127,6 @@ export default function App() {
   const nameInputRef = useRef<HTMLInputElement>(null)
   const timeInputRef = useRef<HTMLSelectElement>(null)
 
-  function leaveQueue(index: number) {
-    currentHolder = undefined
-    removeFromQueue(queue[index])
-  }
-
   function displayExitModal(index: number) {
     setCurrentModalUserIndex(index)
     setDisplayModal(true)
@@ -139,7 +134,7 @@ export default function App() {
 
   function closeExitModal(userDidConfirm: boolean) {
     if (userDidConfirm) {
-      leaveQueue(currentModalUserIndex)
+      removeFromQueue(queue[currentModalUserIndex])
     }
     setDisplayModal(false)
   }
@@ -184,7 +179,12 @@ export default function App() {
 
   return (
     <div className='App'>
-      <NavMenu isReversed={isReversed} handleClick={handleMenuClick} handleOptionToggle={setOptions} userAppSettings={appSettings}/>
+      <NavMenu
+        isReversed={isReversed}
+        handleClick={handleMenuClick}
+        handleOptionToggle={setOptions}
+        userAppSettings={appSettings}
+      />
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
         <Spinner />
@@ -239,8 +239,10 @@ export default function App() {
 function getPrivateKey() {
   let privateKey = localStorage.getItem('privateKey')
   if (!privateKey) {
+    console.log(timestamp(), 'Generating new private key')
     privateKey = uuidv4()
     localStorage.setItem('privateKey', privateKey)
   }
+  console.debug('Retrieving private key from local storage:', privateKey)
   return privateKey
 }

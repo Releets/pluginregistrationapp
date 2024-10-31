@@ -35,28 +35,27 @@ export function enterQueue(entry: QueueEntry) {
 
 export function exitQueue(toRemove: QueueEntry, privateKey: string | undefined, force = false) {
   const data = loadData()
-  const queue = data.filter(entry => isPending(entry))
 
-  // Get the index of the user to remove
-  const i = data.findIndex(entry => isSame(entry, toRemove))
+  // Get the index of the entry to remove
+  const i = data.findIndex(entry => isSame(entry, toRemove) && isPending(entry))
   if (i === null) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
 
   let item = data[i]
 
-  if (!force && item.exited) throw new Error(`Brukeren '${toRemove.username}' er ikke i køen lenger`)
+  console.debug(timestamp(), 'Found item to remove:', item)
+
   if (!force && item.id !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
 
-  // Set the exit time of the user
+  // Set the exit time of the entry
   item = { ...item, exited: Date.now() }
   data[i] = item
   if (!isExited(item)) throw new Error('Failed to exit queue')
 
-  const hasNext = queue.length > 1
-
-  if (hasNext) {
-    // Update the estimated finish time of the next person in queue
-    const next = data[i + 1]
-    data[i + 1] = { ...next, entered: Date.now() }
+  const indexOfNext = data.slice(i + 1).findIndex(entry => isPending(entry)) + i + 1
+  if (!!item.entered && !!indexOfNext) {
+    // Set the next entry as current
+    data[indexOfNext] = { ...data[indexOfNext], entered: Date.now() }
+    console.debug(timestamp(), 'Updated next item:', data[indexOfNext])
   }
 
   saveData(data)
@@ -65,20 +64,21 @@ export function exitQueue(toRemove: QueueEntry, privateKey: string | undefined, 
 }
 
 export function removeOldEntries() {
-  loadData()
-    .filter(entry => isCurrent(entry))
-    .forEach(entry => {
-      const kickTime = entry.entered + entry.estimated * 60 * 60 * 1000
-      if (kickTime < Date.now()) {
-        try {
-          console.debug(timestamp(), 'Auto-kicking', entry.username)
-          exitQueue(entry, undefined, true)
-        } catch (err) {
-          if (!(err instanceof Error)) throw err
-          console.error(timestamp(), err.message)
-        }
+  let didKick = false
+  loadData().forEach(entry => {
+    if (!isCurrent(entry)) return
+    const kickTime = entry.entered + entry.estimated * 60 * 60 * 1000
+    if (kickTime < Date.now()) {
+      try {
+        console.debug(timestamp(), 'Auto-kicking', entry.username)
+        exitQueue(entry, undefined, true)
+        didKick = true
+      } catch (err) {
+        if (!(err instanceof Error)) throw err
+        console.error(timestamp(), err.message)
       }
-    })
+    }
+  })
 
-  return loadData()
+  return didKick ? loadData() : undefined
 }
