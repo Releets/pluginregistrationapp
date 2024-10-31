@@ -15,7 +15,7 @@ export default function NavMenu({ isReversed, handleClick, handleOption, userApp
   useEffect(() => {
     const storedSettings = localStorage.getItem('userSettings')
     if (storedSettings) {
-      godmodePasswordRef.current.value = JSON.parse(storedSettings).godmodePassword
+      godmodePasswordRef.current.value = JSON.parse(storedSettings).godmodePassword ?? ''
     }
   }, [])
 
