@@ -31,6 +31,8 @@ services:
     image: tobasl/pluginregistrationapp-server
     ports:
       - '6969:6969'
+    environment:
+      GODMODE: admin
     restart: always
     volumes:
       - /mnt/user/appdata/pluginregistrationapp:/opt/pluginregistrationapp/data
