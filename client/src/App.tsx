@@ -29,6 +29,7 @@ const socket = io(adr, {
 })
 
 let currentHolder: QueueEntryCurrent | undefined = undefined
+let counter = 0;
 
 export default function App() {
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -169,6 +170,7 @@ export default function App() {
 
   const handleMenuClick = () => {
     setIsReversed(!isReversed)
+    counter++
   }
 
   const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
@@ -182,6 +184,7 @@ export default function App() {
     <div className='App'>
       <NavMenu
         isReversed={isReversed}
+        animationKeyCounter ={counter}
         handleClick={handleMenuClick}
         handleOption={setOptions}
         userAppSettings={appSettings}
