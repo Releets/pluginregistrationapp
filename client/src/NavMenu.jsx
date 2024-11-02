@@ -61,7 +61,6 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick, 
             />
             </div>
           </li>
-          
         </ul>
         <p>Want to report a bug or suggest a feature?</p>
         <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank'>
