@@ -57,6 +57,19 @@ a:active {
   box-shadow: none;
   top: 5px;
 }
+
+.passwordContainer{
+  padding-left: 1em;
+}
+
+.passwordField{
+  margin-top: 1em;
+  border-radius: 5px;
+  background-color: #dfe1e4;
+  border-style: solid;
+  text-align: center;
+}
+
 .burger{
   position: absolute;
   top: 2em;
