@@ -52,13 +52,16 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick, 
             </div>
           </li>
           <li>
-            <input
+            <div className='passwordContainer'>
+            <input className='passwordField'
               ref={godmodePasswordRef}
               type='password'
               placeholder='Godmode password'
               onChange={e => handleOption('godmodePassword', e.target.value)}
             />
+            </div>
           </li>
+          
         </ul>
         <p>Want to report a bug or suggest a feature?</p>
         <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank'>
