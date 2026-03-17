@@ -4,9 +4,48 @@ import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.ts'
 import process from 'node:process'
+import { QueueEntry } from '../models/QueueEntry.ts'
 
 const correctGodmodePassword = process.env.GODMODE
 if (!correctGodmodePassword) throw new Error('GODMODE environment variable not set')
+
+type TabConfig = {
+  id: string
+  label: string
+}
+
+function parseTabsEnv(rawTabs: string | undefined): TabConfig[] {
+  if (!rawTabs) throw new Error('TABS environment variable not set')
+
+  const tabMap = new Map<string, TabConfig>()
+  for (const rawLabel of rawTabs.split(',')) {
+    const label = rawLabel.trim()
+    if (!label) continue
+    const id = label.toLowerCase()
+    if (!tabMap.has(id)) {
+      tabMap.set(id, { id, label })
+    }
+  }
+
+  const tabs = Array.from(tabMap.values())
+  if (tabs.length === 0) throw new Error('TABS environment variable does not contain any valid tab labels')
+  return tabs
+}
+
+const tabs = parseTabsEnv(process.env.TABS)
+const tabIds = new Set(tabs.map(tab => tab.id))
+
+function normalizeTabId(input: unknown): string | null {
+  if (typeof input !== 'string') return null
+  const tabId = input.trim().toLowerCase()
+  return tabIds.has(tabId) ? tabId : null
+}
+
+function getTabIdFromBody(req: Request): string {
+  const tabId = normalizeTabId(req.body?.tab)
+  if (!tabId) throw new Error('Missing or invalid tab')
+  return tabId
+}
 
 const app: Express = express()
 const server = createServer(app)
@@ -20,11 +59,16 @@ app.options('*', cors()) // Enable pre-flight across-the-board
 
 const timestamp = () => new Date().toISOString()
 
+app.get('/tabs', (_req: Request, res: Response) => {
+  res.status(200).json(tabs)
+})
+
 // API to append the queue
 app.post('/add', (req: Request, res: Response) => {
   try {
-    const updatedQueue = enterQueue(req.body.value)
-    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    const tabId = getTabIdFromBody(req)
+    const updatedQueue = enterQueue(tabId, req.body.value as QueueEntry)
+    io.to(tabId).emit('stateUpdate', updatedQueue) // Broadcast only within tab room
     res.sendStatus(200)
   } catch (err) {
     if (!(err instanceof Error)) throw err
@@ -36,11 +80,12 @@ app.post('/add', (req: Request, res: Response) => {
 // API to remove from the queue
 app.post('/remove', (req: Request, res: Response) => {
   try {
+    const tabId = getTabIdFromBody(req)
     const { value, privateKey, godmodePassword } = req.body
     console.debug(timestamp(), 'Received remove request:', req.body)
 
-    const updatedQueue = exitQueue(value, privateKey, godmodePassword === correctGodmodePassword)
-    io.emit('stateUpdate', updatedQueue) // Broadcast the updated state to all clients
+    const updatedQueue = exitQueue(tabId, value as QueueEntry, privateKey, godmodePassword === correctGodmodePassword)
+    io.to(tabId).emit('stateUpdate', updatedQueue) // Broadcast only within tab room
     res.sendStatus(200)
   } catch (err) {
     if (!(err instanceof Error)) throw err
@@ -51,7 +96,16 @@ app.post('/remove', (req: Request, res: Response) => {
 
 io.on('connection', socket => {
   console.debug(timestamp(), 'Connected', socket.id)
-  socket.emit('stateUpdate', loadData()) // Send the current state to newly connected client
+  const tabId = normalizeTabId(socket.handshake.query.tab)
+  if (!tabId) {
+    socket.emit('error', 'Missing or invalid tab')
+    socket.disconnect()
+    return
+  }
+
+  socket.join(tabId)
+  socket.emit('stateUpdate', loadData(tabId)) // Send tab state to newly connected client
+
   socket.on('disconnect', () => {
     console.debug(timestamp(), 'Disconnected', socket.id)
   })
@@ -64,11 +118,16 @@ server.listen(port, () => {
   setInterval(() => {
     console.debug(timestamp(), 'Checking for old entries')
 
-    const newState = removeOldEntries()
-    if (newState) {
-      console.debug(timestamp(), 'Removed entries, broadcasting new state')
-      io.emit('stateUpdate', newState)
-    } else {
+    let didRemoveAny = false
+    for (const tab of tabs) {
+      const newState = removeOldEntries(tab.id)
+      if (!newState) continue
+      didRemoveAny = true
+      console.debug(timestamp(), `Removed entries, broadcasting new state for tab '${tab.id}'`)
+      io.to(tab.id).emit('stateUpdate', newState)
+    }
+
+    if (!didRemoveAny) {
       console.debug(timestamp(), 'No entries were removed')
     }
   }, 1000 * 60)

@@ -1,7 +1,13 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { AudioMode, defaultSettings, UserSettings } from '../../models/UserSettings'
-import { addToQueue as apiAddToQueue, getSocket, removeFromQueue as apiRemoveFromQueue } from './api/queueApi'
+import {
+  addToQueue as apiAddToQueue,
+  getSocket,
+  getTabs as apiGetTabs,
+  removeFromQueue as apiRemoveFromQueue,
+  TabConfig,
+} from './api/queueApi'
 import { playAudio } from './utils/audio'
 import { getPrivateKey } from './utils/privateKey'
 import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
@@ -22,6 +28,8 @@ import cross from './icons/cross.svg'
 let counter = 0
 
 export default function App() {
+  const [tabs, setTabs] = useState<TabConfig[]>([])
+  const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
@@ -52,8 +60,28 @@ export default function App() {
   }, [appSettings])
 
   useEffect(() => {
-    const socket = getSocket()
-    socket.on('stateUpdate', (newState: QueueEntry[]) => {
+    const loadTabs = async () => {
+      try {
+        const configuredTabs = await apiGetTabs()
+        setTabs(configuredTabs)
+        setActiveTab(configuredTabs[0]?.id)
+      } catch (err) {
+        console.error('Failed to load tabs:', err)
+        setDisplaySpinner(false)
+        alert('Kunne ikke hente faner fra serveren')
+      }
+    }
+
+    loadTabs()
+  }, [])
+
+  useEffect(() => {
+    if (!activeTab) return
+    setDisplaySpinner(true)
+    setDisplayModal(false)
+    currentHolderRef.current = undefined
+    const socket = getSocket(activeTab)
+    const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(
         currentHolderRef.current,
@@ -68,11 +96,13 @@ export default function App() {
       currentHolderRef.current = newHolder
       setData(newState)
       setDisplaySpinner(false)
-    })
-    return () => {
-      socket.off('stateUpdate')
     }
-  }, [])
+
+    socket.on('stateUpdate', handleStateUpdate)
+    return () => {
+      socket.off('stateUpdate', handleStateUpdate)
+    }
+  }, [activeTab])
 
   useEffect(() => {
     const stored = loadUserSettingsFromStorage()
@@ -85,12 +115,14 @@ export default function App() {
   }, [])
 
   const addToQueue = (queueEntry: QueueEntry) => {
-    apiAddToQueue(queueEntry)
+    if (!activeTab) return
+    apiAddToQueue(queueEntry, activeTab)
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
+    if (!activeTab) return
     currentHolderRef.current = undefined
-    await apiRemoveFromQueue(user, getPrivateKey(), appSettingsRef.current.godmodePassword)
+    await apiRemoveFromQueue(user, getPrivateKey(), appSettingsRef.current.godmodePassword, activeTab)
   }
 
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -113,7 +145,7 @@ export default function App() {
     const nameInput = nameInputRef.current?.value
     const timeInput = timeInputRef.current?.value
 
-    if (!nameInput || nameInput.length === 0) return
+    if (!activeTab || !nameInput || nameInput.length === 0) return
 
     addToQueue({
       id: getPrivateKey(),
@@ -145,6 +177,20 @@ export default function App() {
         handleOption={setOptions}
         userAppSettings={appSettings}
       />
+      {tabs.length > 0 && (
+        <div className='tabRow'>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tabButton ${tab.id === activeTab ? 'activeTab' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              type='button'
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
         <Spinner />
@@ -188,7 +234,10 @@ export default function App() {
         )}
       </form>
       {displayModal && (
-        <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
+        <ExitModal
+          displayItem={queue[currentModalUserIndex]?.username ?? ''}
+          closeModalFunction={closeExitModal}
+        />
       )}
 
       {!appSettings['hideLog'] && <HistoryDisplay data={data} />}

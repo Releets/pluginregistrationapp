@@ -14,8 +14,35 @@ body {
   align-items: center;
 }
 
-.banner {
+.tabRow {
+  display: flex;
+  gap: 0.5em;
   margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.tabButton {
+  border: 1px solid #7fbab7;
+  background: transparent;
+  color: #cde8e6;
+  padding: 0.4em 0.9em;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.tabButton:hover {
+  background: #0f4f4c;
+}
+
+.activeTab {
+  background: #126662;
+  color: white;
+  border-color: #126662;
+}
+
+.banner {
+  margin-top: 0.5em;
   color: rgb(255, 255, 255);
   font-family: Lato, sans-serif;
   font-size: 3vw;

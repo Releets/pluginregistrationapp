@@ -33,6 +33,7 @@ services:
       - '6969:6969'
     environment:
       GODMODE: admin
+      TABS: Safest,Nordamed
     restart: always
     volumes:
       - /mnt/user/appdata/pluginregistrationapp:/opt/pluginregistrationapp/data
