@@ -18,7 +18,7 @@ export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplay
   return (
     <div className='queue'>
       {[...items]
-        .sort((a, b) => (a.entered ?? 0) - (b.entered ?? 0))
+        .sort((a, b) => (b.entered ?? 0) - (a.entered ?? 0))
         .map((item, i) => (
           <div key={item.username}>
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
