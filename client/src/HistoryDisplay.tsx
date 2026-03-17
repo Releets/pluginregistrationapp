@@ -1,4 +1,4 @@
-import './HistoryDisplay.css'
+import './styles/HistoryDisplay.css'
 import { isExited, QueueEntry, QueueEntryExited } from '../../models/QueueEntry'
 
 export type HistoryDisplayProps = {

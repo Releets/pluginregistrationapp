@@ -1,22 +1,24 @@
-import './QueueDisplay.css'
-import PropTypes from 'prop-types'
+import './styles/QueueDisplay.css'
+import type { QueueEntry } from '../../models/QueueEntry'
 
-QueueDisplay.propTypes = {
-  leaveQueueFunction: PropTypes.func.isRequired,
-  items: PropTypes.array.isRequired,
+export type QueueDisplayProps = {
+  items: QueueEntry[]
+  leaveQueueFunction: (index: number) => void
 }
 
-export default function QueueDisplay({ leaveQueueFunction, items }) {
-  const formattedFinishTime = entry =>
-    new Date(entry.entered + entry.estimated * 60 * 60 * 1000).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+function formattedFinishTime(entry: QueueEntry): string {
+  const entered = entry.entered ?? 0
+  return new Date(entered + entry.estimated * 60 * 60 * 1000).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
+export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplayProps) {
   return (
     <div className='queue'>
-      {items
-        .sort((a, b) => a.entered - b.entered)
+      {[...items]
+        .sort((a, b) => (a.entered ?? 0) - (b.entered ?? 0))
         .map((item, i) => (
           <div key={item.username}>
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>

@@ -1,22 +1,29 @@
 import { useEffect, useRef } from 'react'
-import './NavMenu.css'
-import PropTypes from 'prop-types'
+import './styles/NavMenu.css'
+import type { UserSettings } from '../../models/UserSettings'
+import { loadUserSettingsFromStorage } from './utils/settings'
 
-NavMenu.propTypes = {
-  isReversed: PropTypes.bool.isRequired,
-  animationKeyCounter: PropTypes.number.isRequired,
-  handleClick: PropTypes.func.isRequired,
-  handleOption: PropTypes.func.isRequired,
-  userAppSettings: PropTypes.object.isRequired,
+export type NavMenuProps = {
+  isReversed: boolean
+  animationKeyCounter: number
+  handleClick: () => void
+  handleOption: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void
+  userAppSettings: UserSettings
 }
 
-export default function NavMenu({ isReversed, animationKeyCounter, handleClick, handleOption, userAppSettings }) {
-  const godmodePasswordRef = useRef(null)
+export default function NavMenu({
+  isReversed,
+  animationKeyCounter,
+  handleClick,
+  handleOption,
+  userAppSettings,
+}: NavMenuProps) {
+  const godmodePasswordRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const storedSettings = localStorage.getItem('userSettings')
-    if (storedSettings) {
-      godmodePasswordRef.current.value = JSON.parse(storedSettings).godmodePassword ?? ''
+    const stored = loadUserSettingsFromStorage()
+    if (stored?.godmodePassword != null && godmodePasswordRef.current) {
+      godmodePasswordRef.current.value = stored.godmodePassword
     }
   }, [])
 
@@ -53,17 +60,18 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick, 
           </li>
           <li>
             <div className='passwordContainer'>
-            <input className='passwordField'
-              ref={godmodePasswordRef}
-              type='password'
-              placeholder='Godmode password'
-              onChange={e => handleOption('godmodePassword', e.target.value)}
-            />
+              <input
+                className='passwordField'
+                ref={godmodePasswordRef}
+                type='password'
+                placeholder='Godmode password'
+                onChange={e => handleOption('godmodePassword', e.target.value)}
+              />
             </div>
           </li>
         </ul>
         <p>Want to report a bug or suggest a feature?</p>
-        <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank'>
+        <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank' rel='noreferrer'>
           Create an issue here
         </a>
       </div>
