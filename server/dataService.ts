@@ -43,7 +43,7 @@ export function exitQueue(tabId: string, toRemove: QueueEntry, privateKey: strin
 
   // Get the index of the entry to remove
   const i = data.findIndex(entry => isSame(entry, toRemove) && isPending(entry))
-  if (i === null) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
+  if (i === -1) throw new Error(`Brukeren '${toRemove.username}' ble ikke funnet i køen`)
 
   let item = data[i]
 
