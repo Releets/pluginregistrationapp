@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import './NavMenu.css'
 import PropTypes from 'prop-types'
+import { setStoredIdentity } from './utils/identity'
 
 NavMenu.propTypes = {
   isReversed: PropTypes.bool.isRequired,
@@ -8,10 +9,25 @@ NavMenu.propTypes = {
   handleClick: PropTypes.func.isRequired,
   handleOption: PropTypes.func.isRequired,
   userAppSettings: PropTypes.object.isRequired,
+  identity: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    userId: PropTypes.string.isRequired,
+    privateKey: PropTypes.string.isRequired,
+  }).isRequired,
+  onIdentityChange: PropTypes.func.isRequired,
 }
 
-export default function NavMenu({ isReversed, animationKeyCounter, handleClick, handleOption, userAppSettings }) {
+export default function NavMenu({
+  isReversed,
+  animationKeyCounter,
+  handleClick,
+  handleOption,
+  userAppSettings,
+  identity,
+  onIdentityChange,
+}) {
   const godmodePasswordRef = useRef(null)
+  const nameInputRef = useRef(null)
 
   useEffect(() => {
     const storedSettings = localStorage.getItem('userSettings')
@@ -19,6 +35,21 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick, 
       godmodePasswordRef.current.value = JSON.parse(storedSettings).godmodePassword ?? ''
     }
   }, [])
+
+  useEffect(() => {
+    if (nameInputRef.current && identity.name !== nameInputRef.current.value) {
+      nameInputRef.current.value = identity.name
+    }
+  }, [identity.name])
+
+  const handleNameChange = () => {
+    const newName = nameInputRef.current?.value?.trim()
+    if (newName && newName !== identity.name) {
+      const next = { ...identity, name: newName }
+      setStoredIdentity(next)
+      onIdentityChange(next)
+    }
+  }
 
   return (
     <div className='navmenuwrapper'>
@@ -29,6 +60,20 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick, 
       </div>
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
+          <li>
+            <div className='nameContainer'>
+              <label>Ditt navn</label>
+              <input
+                ref={nameInputRef}
+                type='text'
+                className='nameField'
+                defaultValue={identity.name}
+                onBlur={handleNameChange}
+                onKeyDown={e => e.key === 'Enter' && handleNameChange()}
+                maxLength={50}
+              />
+            </div>
+          </li>
           <li>
             <div className='checkbox-wrapper'>
               <input

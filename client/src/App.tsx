@@ -1,9 +1,15 @@
 import axios, { AxiosError } from 'axios'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
-import { v4 as uuidv4 } from 'uuid'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { UserSettings, AudioMode, defaultSettings } from '../../models/UserSettings'
+import {
+  getStoredIdentity,
+  setStoredIdentity,
+  type StoredIdentity,
+  getUserId,
+  getPrivateKey,
+} from './utils/identity'
 import './App.css'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
@@ -32,14 +38,20 @@ let currentHolder: QueueEntryCurrent | undefined = undefined
 let counter = 0;
 
 export default function App() {
+  const [identity, setIdentity] = useState<StoredIdentity | null>(() => getStoredIdentity())
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
   const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
   const [appSettings, setAppSettings] = useState(defaultSettings)
+  const [loginName, setLoginName] = useState('')
+  const [loginError, setLoginError] = useState('')
 
   const queue = data.filter(e => isPending(e))
+  const currentUserId = identity?.userId ?? null
+  const currentUserQueueIndex =
+    currentUserId != null ? queue.findIndex(e => e.id === currentUserId) : -1
 
   const sounds: Record<AudioMode, { free: HTMLAudioElement; kick: HTMLAudioElement }> = {
     normal: {
@@ -66,15 +78,16 @@ export default function App() {
       const newHolder = newState.find(entry => isCurrent(entry))
 
       // Skip if you are loading the page
-      if (currentHolder) {
+      const userId = getUserId()
+      if (currentHolder && userId) {
         // If you are the current holder and someone else replaces you
-        if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
+        if (currentHolder.id === userId && newHolder?.id !== userId) {
           console.log(timestamp(), 'Removed from queue due to alloted timeslot')
           playAudio(sounds[appSettingsRef.current.audioMode].kick)
         }
 
         // If you are the new current holder and someone else had it before you
-        if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
+        if (newHolder?.id === userId && currentHolder.id !== userId) {
           console.log(timestamp(), 'PluginReg is now yours')
           playAudio(sounds[appSettingsRef.current.audioMode].free)
         }
@@ -110,13 +123,15 @@ export default function App() {
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
+    const key = getPrivateKey()
+    if (!key) return
     console.log(timestamp(), 'Removing ' + user.username + ' from queue')
     currentHolder = undefined
 
     try {
       await axios.post(adr + '/remove', {
         value: user,
-        privateKey: getPrivateKey(),
+        privateKey: key,
         godmodePassword: appSettingsRef.current.godmodePassword,
       })
     } catch (e) {
@@ -126,8 +141,25 @@ export default function App() {
     }
   }
 
-  const nameInputRef = useRef<HTMLInputElement>(null)
   const timeInputRef = useRef<HTMLSelectElement>(null)
+
+  const handleLoginSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    const name = loginName.trim()
+    if (!name) {
+      setLoginError('Skriv inn navnet ditt')
+      return
+    }
+    setLoginError('')
+    try {
+      const { data: reg } = await axios.post<{ userId: string; privateKey: string }>(adr + '/register', {})
+      setStoredIdentity({ name, userId: reg.userId, privateKey: reg.privateKey })
+      setIdentity(getStoredIdentity())
+    } catch (err) {
+      setLoginError('Kunne ikke registrere. Prøv igjen.')
+      console.warn(err)
+    }
+  }
 
   function displayExitModal(index: number) {
     setCurrentModalUserIndex(index)
@@ -141,20 +173,15 @@ export default function App() {
     setDisplayModal(false)
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleQueueSubmit = (event: FormEvent) => {
     event.preventDefault()
-    const nameInput = nameInputRef.current?.value
+    if (!identity) return
     const timeInput = timeInputRef.current?.value
-
-    if (!nameInput || nameInput.length === 0) return
-
     addToQueue({
-      id: getPrivateKey(),
-      username: nameInputRef.current.value,
+      id: identity.userId,
+      username: identity.name,
       estimated: parseInt(timeInput ?? '1'),
     })
-
-    nameInputRef.current.value = ''
   }
 
   const playAudio = async (sound: HTMLAudioElement) => {
@@ -180,14 +207,42 @@ export default function App() {
     console.debug(timestamp(), 'Updated settings:', newSettings)
   }
 
+  if (!identity) {
+    return (
+      <div className='App'>
+        <div className='banner'>Plugin Registration Kø</div>
+        <div className='loginPrompt'>
+          <p>Skriv inn navnet ditt for å bruke køen</p>
+          <form className='queueForm' onSubmit={handleLoginSubmit}>
+            <input
+              type='text'
+              placeholder='Ditt navn'
+              className={`textinput ${loginError ? 'wronginput' : ''}`}
+              value={loginName}
+              onChange={e => setLoginName(e.target.value)}
+              maxLength={50}
+              autoFocus
+            />
+            {loginError && <p className='loginError'>{loginError}</p>}
+            <button type='submit' className='button'>
+              Fortsett
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='App'>
       <NavMenu
         isReversed={isReversed}
-        animationKeyCounter ={counter}
+        animationKeyCounter={counter}
         handleClick={handleMenuClick}
         handleOption={setOptions}
         userAppSettings={appSettings}
+        identity={identity}
+        onIdentityChange={setIdentity}
       />
       <div className='banner'>Er Plugin Registration ledig?</div>
       {displaySpinner ? (
@@ -211,9 +266,8 @@ export default function App() {
         </div>
       )}
 
-      <form className='queueForm' onSubmit={handleSubmit}>
+      <form className='queueForm' onSubmit={handleQueueSubmit}>
         <div>
-          <input type='text' placeholder='Ditt navn' className='textinput' ref={nameInputRef} maxLength={7} />
           <select className='textinput selectinput' ref={timeInputRef}>
             <option value='1'>1 time</option>
             <option value='2'>2 timer</option>
@@ -225,28 +279,29 @@ export default function App() {
             <option value='8'>8 timer</option>
           </select>
         </div>
-        <button className='button'>{queue.length === 0 ? 'Overta' : 'Gå i kø'}</button>
+        {currentUserQueueIndex >= 0 ? (
+          <button
+            type='button'
+            className='button'
+            onClick={() => displayExitModal(currentUserQueueIndex)}
+          >
+            Jeg er ferdig / Forlat køen
+          </button>
+        ) : (
+          <button type='submit' className='button'>
+            {queue.length === 0 ? 'Overta' : 'Gå i kø'}
+          </button>
+        )}
         <br></br>
         {queue.length > 0 && (
           <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
         )}
       </form>
-      {displayModal && (
+      {displayModal && queue[currentModalUserIndex] && (
         <ExitModal displayItem={queue[currentModalUserIndex].username} closeModalFunction={closeExitModal} />
       )}
 
       {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
     </div>
   )
-}
-
-function getPrivateKey() {
-  let privateKey = localStorage.getItem('privateKey')
-  if (!privateKey) {
-    console.log(timestamp(), 'Generating new private key')
-    privateKey = uuidv4()
-    localStorage.setItem('privateKey', privateKey)
-  }
-  console.debug('Retrieving private key from local storage:', privateKey)
-  return privateKey
 }

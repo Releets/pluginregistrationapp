@@ -58,6 +58,27 @@ a:active {
   top: 5px;
 }
 
+.nameContainer {
+  padding-left: 1em;
+  margin-bottom: 0.5em;
+}
+
+.nameContainer label {
+  display: block;
+  margin-bottom: 0.25em;
+}
+
+.nameField {
+  margin-top: 0.25em;
+  border-radius: 5px;
+  background-color: #dfe1e4;
+  border-style: solid;
+  padding: 0.25em 0.5em;
+  width: 100%;
+  max-width: 12em;
+  box-sizing: border-box;
+}
+
 .passwordContainer{
   padding-left: 1em;
 }

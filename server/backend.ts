@@ -2,6 +2,7 @@ import cors from 'cors'
 import express, { Express, json, Request, Response } from 'express'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
+import { register } from './authService.ts'
 import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.ts'
 import process from 'node:process'
 
@@ -19,6 +20,18 @@ app.use(json())
 app.options('*', cors()) // Enable pre-flight across-the-board
 
 const timestamp = () => new Date().toISOString()
+
+// API to register a new user (returns userId + privateKey for client to store)
+app.post('/register', (_req: Request, res: Response) => {
+  try {
+    const { userId, privateKey } = register()
+    res.status(200).json({ userId, privateKey })
+  } catch (err) {
+    if (!(err instanceof Error)) throw err
+    console.error(timestamp(), 'Error registering:', err.message)
+    res.status(500).send(err.message)
+  }
+})
 
 // API to append the queue
 app.post('/add', (req: Request, res: Response) => {
