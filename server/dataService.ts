@@ -2,8 +2,13 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { isCurrent, isExited, isPending, isSame, QueueEntry } from '../models/QueueEntry.ts'
 import { loadAuth } from './authService.ts'
 
+/** All stored timestamps (entered, exited) are UTC milliseconds since epoch. */
 const timestamp = () => new Date().toISOString()
 const DATA_FILE = '../data/data.json'
+
+function nowUtcMs(): number {
+  return Date.now()
+}
 
 export function loadData(): QueueEntry[] {
   try {
@@ -25,7 +30,7 @@ export function enterQueue(entry: QueueEntry) {
   const queue = data.filter(e => !e.exited)
 
   if (queue.length >= 5) throw new Error('Køen er full')
-  if (queue.length === 0) entry = { ...entry, entered: Date.now() }
+  if (queue.length === 0) entry = { ...entry, entered: nowUtcMs() }
 
   data.push(entry)
 
@@ -58,14 +63,13 @@ export function exitQueue(toRemove: QueueEntry, privateKey: string | undefined, 
   }
 
   // Set the exit time of the entry
-  item = { ...item, exited: Date.now() }
+  item = { ...item, exited: nowUtcMs() }
   data[i] = item
   if (!isExited(item)) throw new Error('Failed to exit queue')
 
   const indexOfNext = data.slice(i + 1).findIndex(entry => isPending(entry)) + i + 1
   if (!!item.entered && !!indexOfNext) {
-    // Set the next entry as current
-    data[indexOfNext] = { ...data[indexOfNext], entered: Date.now() }
+    data[indexOfNext] = { ...data[indexOfNext], entered: nowUtcMs() }
     console.debug(timestamp(), 'Updated next item:', data[indexOfNext])
   }
 
@@ -79,7 +83,7 @@ export function removeOldEntries() {
   loadData().forEach(entry => {
     if (!isCurrent(entry)) return
     const kickTime = entry.entered + entry.estimated * 60 * 60 * 1000
-    if (kickTime < Date.now()) {
+    if (kickTime < nowUtcMs()) {
       try {
         console.debug(timestamp(), 'Auto-kicking', entry.username)
         exitQueue(entry, undefined, true)
