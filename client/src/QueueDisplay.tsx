@@ -1,5 +1,6 @@
 import './styles/QueueDisplay.css'
 import type { QueueEntry } from '../../models/QueueEntry'
+import { formatTime } from './utils/dateFormat'
 
 export type QueueDisplayProps = {
   items: QueueEntry[]
@@ -8,17 +9,15 @@ export type QueueDisplayProps = {
 
 function formattedFinishTime(entry: QueueEntry): string {
   const entered = entry.entered ?? 0
-  return new Date(entered + entry.estimated * 60 * 60 * 1000).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const finishUtcMs = entered + entry.estimated * 60 * 60 * 1000
+  return formatTime(finishUtcMs)
 }
 
 export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplayProps) {
   return (
     <div className='queue'>
       {[...items]
-        .sort((a, b) => (a.entered ?? 0) - (b.entered ?? 0))
+        .sort((a, b) => (b.entered ?? 0) - (a.entered ?? 0))
         .map((item, i) => (
           <div key={item.username}>
             <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
