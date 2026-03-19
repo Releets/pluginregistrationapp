@@ -1,63 +1,82 @@
 .navmenuwrapper{
   position: absolute;
-  overflow: visible;
   color: white;
   top: 0;
   right: 0;
   width: 15em;
-  height: 20em;
   z-index: 20;
 }
 .menu{
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  width: inherit;
-  height: inherit;
   top: 0;
+  right: 0;
+  width: inherit;
   background-color: #003230;
-  transition: ease-in-out 0.2s;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2.6px 2.6px;
   z-index: 21;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+
+  /* Keep everything reachable: auto-height panel with internal scrolling. */
+  max-height: calc(100vh - 0.5em);
+  overflow: auto;
+
+  /* Panel slides in/out without relying on fixed height. */
+  transform: translateX(100%);
+  transition: transform ease-in-out 0.2s;
+
+  /* Space so the panel content doesn't get covered by the burger icon. */
+  padding: 3.6em 0.75em 1em 0.75em;
 }
 .visible{
-  right: 0;
+  transform: translateX(0);
 }
 .invisible{
-  right: -15em
+  transform: translateX(100%);
 }
 .options{
-  margin-top: 4em;
-  margin-left: 1em;
+  margin: 0;
   padding: 0;
   list-style-type: none;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
 }
 
-p{
+.menuFooter{
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.menuFooter p{
+  margin: 0;
   font-size: 60%;
 }
-a {
-  margin: 1em;
-  margin-top: 0;
+
+.githubIssueButton{
   background-color: rgb(4, 49, 4);
   box-shadow: 0 5px 0 rgb(1, 39, 23);
   color: white;
   padding: 0.5em 1em;
-  position: relative;
   text-decoration: none;
   text-transform: uppercase;
-  bottom: 0;
+  align-self: flex-start;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
 }
 
-a:hover {
+.githubIssueButton:hover {
   background-color: rgb(8, 73, 8);
 }
 
-a:active {
+.githubIssueButton:active {
   box-shadow: none;
-  top: 5px;
 }
 
 .nameContainer {

@@ -106,10 +106,17 @@ export default function NavMenu({
             </div>
           </li>
         </ul>
-        <p>Want to report a bug or suggest a feature?</p>
-        <a href='https://github.com/Releets/pluginregistrationapp/issues/new' target='_blank' rel='noreferrer'>
-          Create an issue here
-        </a>
+        <div className='menuFooter'>
+          <p>Want to report a bug or suggest a feature?</p>
+          <a
+            className='githubIssueButton'
+            href='https://github.com/Releets/pluginregistrationapp/issues/new'
+            target='_blank'
+            rel='noreferrer'
+          >
+            Create an issue here
+          </a>
+        </div>
       </div>
     </div>
   )
