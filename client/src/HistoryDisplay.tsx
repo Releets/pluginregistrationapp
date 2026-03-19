@@ -1,5 +1,6 @@
-import './HistoryDisplay.css'
+import './styles/HistoryDisplay.css'
 import { isExited, QueueEntry, QueueEntryExited } from '../../models/QueueEntry'
+import { formatDateTime } from './utils/dateFormat'
 
 export type HistoryDisplayProps = {
   data: QueueEntry[]
@@ -37,20 +38,7 @@ function HistoryEntry(props: Readonly<HistoryEntryProps>) {
   return (
     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       <div className='username'>{item.username}</div>
-      <div className='timestamp'>{formattedDate(item.exited)}</div>
+      <div className='timestamp'>{formatDateTime(item.exited)}</div>
     </div>
-  )
-}
-
-function formattedDate(timestamp = Date.now()) {
-  const date = new Date(timestamp)
-  return (
-    date.getDate() +
-    ' ' +
-    date.toLocaleString('default', { month: 'short' }) +
-    ' | ' +
-    date.getHours() +
-    ':' +
-    String(date.getMinutes()).padStart(2, '0')
   )
 }

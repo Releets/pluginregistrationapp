@@ -1,10 +1,12 @@
-import axios, { AxiosError } from 'axios'
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import io from 'socket.io-client'
-import { v4 as uuidv4 } from 'uuid'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
-import { UserSettings, AudioMode, defaultSettings } from '../../models/UserSettings'
-import './App.css'
+import { AudioMode, defaultSettings, UserSettings } from '../../models/UserSettings'
+import { addToQueue as apiAddToQueue, getSocket, removeFromQueue as apiRemoveFromQueue } from './api/queueApi'
+import { playAudio } from './utils/audio'
+import { getPrivateKey } from './utils/privateKey'
+import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
+import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
+import './styles/App.css'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
 import NavMenu from './NavMenu'
@@ -17,19 +19,7 @@ import queueKickSoundTob from './audio/queue_kick_tob.mp3'
 import check from './icons/check.svg'
 import cross from './icons/cross.svg'
 
-const adr = import.meta.env.VITE_BACKEND_URL
-if (!adr) throw new Error('VITE_BACKEND_URL environment variable not set')
-
-const timestamp = () => new Date().toISOString()
-
-console.log(timestamp(), 'Connecting to server at', adr)
-axios.defaults.baseURL = adr
-const socket = io(adr, {
-  transports: ['websocket'],
-})
-
-let currentHolder: QueueEntryCurrent | undefined = undefined
-let counter = 0;
+let counter = 0
 
 export default function App() {
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -53,77 +43,54 @@ export default function App() {
   }
 
   const appSettingsRef = useRef(appSettings)
+  const currentHolderRef = useRef<QueueEntryCurrent | undefined>(undefined)
+  const soundsRef = useRef(sounds)
+  soundsRef.current = sounds
 
-  // Use a useEffect to update the ref whenever userSettings changes
   useEffect(() => {
     appSettingsRef.current = appSettings
   }, [appSettings])
 
   useEffect(() => {
-    // Listen for updates from the backend
+    const socket = getSocket()
     socket.on('stateUpdate', (newState: QueueEntry[]) => {
-      console.debug(timestamp(), 'Recieved update from backend')
       const newHolder = newState.find(entry => isCurrent(entry))
-
-      // Skip if you are loading the page
-      if (currentHolder) {
-        // If you are the current holder and someone else replaces you
-        if (currentHolder.id === getPrivateKey() && newHolder?.id !== getPrivateKey()) {
-          console.log(timestamp(), 'Removed from queue due to alloted timeslot')
-          playAudio(sounds[appSettingsRef.current.audioMode].kick)
-        }
-
-        // If you are the new current holder and someone else had it before you
-        if (newHolder?.id === getPrivateKey() && currentHolder.id !== getPrivateKey()) {
-          console.log(timestamp(), 'PluginReg is now yours')
-          playAudio(sounds[appSettingsRef.current.audioMode].free)
-        }
+      const soundToPlay = getSoundToPlayForStateUpdate(
+        currentHolderRef.current,
+        newState,
+        getPrivateKey()
+      )
+      if (soundToPlay === 'kick') {
+        playAudio(soundsRef.current[appSettingsRef.current.audioMode].kick)
+      } else if (soundToPlay === 'free') {
+        playAudio(soundsRef.current[appSettingsRef.current.audioMode].free)
       }
-
-      currentHolder = newHolder
+      currentHolderRef.current = newHolder
       setData(newState)
       setDisplaySpinner(false)
     })
-
     return () => {
       socket.off('stateUpdate')
     }
   }, [])
 
   useEffect(() => {
-    const storedSettings = localStorage.getItem('userSettings')
-    if (storedSettings) {
-      const parsedSettings = JSON.parse(storedSettings)
-      setAppSettings(parsedSettings)
-      console.debug('Retrieved settings from storage:', parsedSettings)
+    const stored = loadUserSettingsFromStorage()
+    if (stored) {
+      setAppSettings(stored)
+      console.debug('Retrieved settings from storage:', stored)
     } else {
       console.debug('No settings found in storage')
     }
   }, [])
 
   const addToQueue = (queueEntry: QueueEntry) => {
-    console.log(timestamp(), 'Adding ' + queueEntry.username + ' to queue')
-    axios.post(adr + '/add', { value: queueEntry }).catch(e => {
-      console.warn(timestamp(), e)
-      alert(e.response.data)
-    })
+    apiAddToQueue(queueEntry)
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
-    console.log(timestamp(), 'Removing ' + user.username + ' from queue')
-    currentHolder = undefined
-
-    try {
-      await axios.post(adr + '/remove', {
-        value: user,
-        privateKey: getPrivateKey(),
-        godmodePassword: appSettingsRef.current.godmodePassword,
-      })
-    } catch (e) {
-      if (!(e instanceof AxiosError)) throw e
-      console.warn(timestamp(), e)
-      alert(e.response?.data)
-    }
+    currentHolderRef.current = undefined
+    await apiRemoveFromQueue(user, getPrivateKey(), appSettingsRef.current.godmodePassword)
   }
 
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -150,22 +117,11 @@ export default function App() {
 
     addToQueue({
       id: getPrivateKey(),
-      username: nameInputRef.current.value,
+      username: nameInputRef.current!.value,
       estimated: parseInt(timeInput ?? '1'),
     })
 
-    nameInputRef.current.value = ''
-  }
-
-  const playAudio = async (sound: HTMLAudioElement) => {
-    try {
-      await sound.play()
-    } catch (err) {
-      if (err instanceof Error) {
-        console.warn(timestamp(), err)
-      }
-      console.log(timestamp(), 'Cancelled initial audio')
-    }
+    nameInputRef.current!.value = ''
   }
 
   const handleMenuClick = () => {
@@ -175,16 +131,16 @@ export default function App() {
 
   const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
     const newSettings = { ...appSettings, [key]: value }
-    localStorage.setItem('userSettings', JSON.stringify(newSettings))
+    saveUserSettingsToStorage(newSettings)
     setAppSettings(newSettings)
-    console.debug(timestamp(), 'Updated settings:', newSettings)
+    console.debug('Updated settings:', newSettings)
   }
 
   return (
     <div className='App'>
       <NavMenu
         isReversed={isReversed}
-        animationKeyCounter ={counter}
+        animationKeyCounter={counter}
         handleClick={handleMenuClick}
         handleOption={setOptions}
         userAppSettings={appSettings}
@@ -238,15 +194,4 @@ export default function App() {
       {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
     </div>
   )
-}
-
-function getPrivateKey() {
-  let privateKey = localStorage.getItem('privateKey')
-  if (!privateKey) {
-    console.log(timestamp(), 'Generating new private key')
-    privateKey = uuidv4()
-    localStorage.setItem('privateKey', privateKey)
-  }
-  console.debug('Retrieving private key from local storage:', privateKey)
-  return privateKey
 }
