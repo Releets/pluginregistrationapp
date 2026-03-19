@@ -80,7 +80,7 @@
 }
 
 .nameContainer {
-  padding-left: 1em;
+  padding-left: 0;
   margin-bottom: 0.5em;
 }
 
@@ -98,10 +98,11 @@
   width: 100%;
   max-width: 12em;
   box-sizing: border-box;
+  text-align: left;
 }
 
 .passwordContainer{
-  padding-left: 1em;
+  padding-left: 0;
 }
 
 .passwordField{
@@ -109,7 +110,8 @@
   border-radius: 5px;
   background-color: #dfe1e4;
   border-style: solid;
-  text-align: center;
+  text-align: left;
+  padding-left: 0.5em;
 }
 
 .burger{
