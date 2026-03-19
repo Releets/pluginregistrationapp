@@ -6,16 +6,17 @@ export type StateUpdateSound = 'kick' | 'free'
 export function getSoundToPlayForStateUpdate(
   previousHolder: QueueEntryCurrent | undefined,
   newState: QueueEntry[],
-  privateKey: string
+  userId: string | null
 ): StateUpdateSound | null {
+  if (!userId) return null
   const newHolder = newState.find(entry => isCurrent(entry))
 
   if (!previousHolder) return null
 
-  if (previousHolder.id === privateKey && newHolder?.id !== privateKey) {
+  if (previousHolder.id === userId && newHolder?.id !== userId) {
     return 'kick'
   }
-  if (newHolder?.id === privateKey && previousHolder.id !== privateKey) {
+  if (newHolder?.id === userId && previousHolder.id !== userId) {
     return 'free'
   }
   return null

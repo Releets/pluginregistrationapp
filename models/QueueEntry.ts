@@ -7,7 +7,9 @@ export type QueueEntry = {
 }
 
 export function isSame(a: QueueEntry, b: QueueEntry): boolean {
-  return a.id === b.id && a.username === b.username && a.entered === b.entered
+  // Queue entries are uniquely identified by the immutable userId stored in `id`.
+  // Other fields (like `username` and `entered`) may change over time and should not be part of identity checks.
+  return a.id === b.id
 }
 
 export type QueueEntryPending = QueueEntry & { exited: undefined }
