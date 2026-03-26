@@ -5,7 +5,7 @@ WORKDIR /opt/pluginregistrationapp
 
 # Environment variables
 ARG BACKEND_URL
-ENV VITE_BACKEND_URL $BACKEND_URL
+ENV VITE_BACKEND_URL=$BACKEND_URL
 
 # PORTS
 EXPOSE 5173
