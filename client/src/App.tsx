@@ -28,6 +28,7 @@ import check from './icons/check.svg'
 import cross from './icons/cross.svg'
 
 let counter = 0
+const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
 export default function App() {
   const [tabs, setTabs] = useState<TabConfig[]>([])
@@ -69,7 +70,22 @@ export default function App() {
       try {
         const configuredTabs = await apiGetTabs()
         setTabs(configuredTabs)
-        setActiveTab(configuredTabs[0]?.id)
+        const availableTabIds = new Set(configuredTabs.map(tab => tab.id))
+        const tabFromUrl = new URLSearchParams(globalThis.location.search).get('tab')
+        const storedTab = localStorage.getItem(LAST_ACTIVE_TAB_STORAGE_KEY)
+        const preferredTab =
+          (tabFromUrl && availableTabIds.has(tabFromUrl) && tabFromUrl) ||
+          (storedTab && availableTabIds.has(storedTab) && storedTab) ||
+          configuredTabs[0]?.id
+
+        setActiveTab(preferredTab)
+
+        if (!preferredTab) return
+        const url = new URL(globalThis.location.href)
+        if (url.searchParams.get('tab') !== preferredTab) {
+          url.searchParams.set('tab', preferredTab)
+          globalThis.history.replaceState(null, '', url.toString())
+        }
       } catch (err) {
         console.error('Failed to load tabs:', err)
         setDisplaySpinner(false)
@@ -79,6 +95,15 @@ export default function App() {
 
     loadTabs()
   }, [])
+
+  useEffect(() => {
+    if (!activeTab) return
+    localStorage.setItem(LAST_ACTIVE_TAB_STORAGE_KEY, activeTab)
+    const url = new URL(globalThis.location.href)
+    if (url.searchParams.get('tab') === activeTab) return
+    url.searchParams.set('tab', activeTab)
+    globalThis.history.replaceState(null, '', url.toString())
+  }, [activeTab])
 
   useEffect(() => {
     if (!activeTab) return
