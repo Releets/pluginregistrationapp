@@ -56,6 +56,20 @@ export async function addToQueue(queueEntry: QueueEntry, tab: string): Promise<v
   }
 }
 
+export async function registerIdentity(): Promise<{ userId: string; privateKey: string }> {
+  ensureAxiosBaseUrl()
+  const adr = getBackendUrl()
+  try {
+    const res = await axios.post(adr + '/register')
+    const { userId, privateKey } = res.data as { userId: string; privateKey: string }
+    if (typeof userId !== 'string' || typeof privateKey !== 'string') throw new Error('Invalid register response')
+    return { userId, privateKey }
+  } catch (e) {
+    console.warn(timestamp(), e)
+    throw e
+  }
+}
+
 export async function removeFromQueue(
   user: QueueEntry,
   privateKey: string,

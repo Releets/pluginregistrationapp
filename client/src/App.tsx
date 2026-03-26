@@ -5,13 +5,14 @@ import {
   addToQueue as apiAddToQueue,
   getSocket,
   getTabs as apiGetTabs,
+  registerIdentity,
   removeFromQueue as apiRemoveFromQueue,
   TabConfig,
 } from './api/queueApi'
 import { playAudio } from './utils/audio'
-import { getPrivateKey } from './utils/privateKey'
 import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
 import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
+import { type StoredIdentity, getStoredIdentity, getUserId, setStoredIdentity } from './utils/identity'
 import './styles/App.css'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
@@ -32,10 +33,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
-  const [currentModalUserIndex, setCurrentModalUserIndex] = useState(0)
+  const [modalEntry, setModalEntry] = useState<QueueEntry | null>(null)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
   const [appSettings, setAppSettings] = useState(defaultSettings)
+  const [identity, setIdentity] = useState<StoredIdentity | null>(() => getStoredIdentity())
+  const [loginName, setLoginName] = useState<string>(() => getStoredIdentity()?.name ?? '')
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const queue = data.filter(e => isPending(e))
 
@@ -86,7 +90,7 @@ export default function App() {
       const soundToPlay = getSoundToPlayForStateUpdate(
         currentHolderRef.current,
         newState,
-        getPrivateKey()
+        getUserId()
       )
       if (soundToPlay === 'kick') {
         playAudio(soundsRef.current[appSettingsRef.current.audioMode].kick)
@@ -122,38 +126,55 @@ export default function App() {
   const removeFromQueue = async (user: QueueEntry) => {
     if (!activeTab) return
     currentHolderRef.current = undefined
-    await apiRemoveFromQueue(user, getPrivateKey(), appSettingsRef.current.godmodePassword, activeTab)
+    if (!identity?.privateKey) throw new Error('Du må være logget inn for å forlate køen')
+
+    // Legacy compatibility: older queue rows used the old `privateKey` as `id`.
+    // If the queue entry id matches the legacy privateKey stored under `privateKey`,
+    // submit that secret instead of the new identity privateKey.
+    const legacyPrivateKey = localStorage.getItem('privateKey')
+    const privateKeyToSubmit = user.id === legacyPrivateKey ? legacyPrivateKey : identity.privateKey
+    if (!privateKeyToSubmit) throw new Error('Mangler privatnøkkel for fjerning av køplass')
+
+    await apiRemoveFromQueue(user, privateKeyToSubmit, appSettingsRef.current.godmodePassword, activeTab)
   }
 
-  const nameInputRef = useRef<HTMLInputElement>(null)
   const timeInputRef = useRef<HTMLSelectElement>(null)
 
-  function displayExitModal(index: number) {
-    setCurrentModalUserIndex(index)
+  function displayExitModal(id: string) {
+    const entry = queue.find(e => e.id === id)
+    if (!entry) return
+    setModalEntry(entry)
     setDisplayModal(true)
   }
 
   function closeExitModal(userDidConfirm: boolean) {
     if (userDidConfirm) {
-      removeFromQueue(queue[currentModalUserIndex])
+      if (modalEntry) removeFromQueue(modalEntry)
     }
     setDisplayModal(false)
+    setModalEntry(null)
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleQueueSubmit = (event: FormEvent) => {
     event.preventDefault()
-    const nameInput = nameInputRef.current?.value
     const timeInput = timeInputRef.current?.value
 
-    if (!activeTab || !nameInput || nameInput.length === 0) return
+    if (!activeTab) return
+    if (!identity) return
+    if (!timeInput) return
+
+    // Prevent joining again (including legacy privateKey-based queue entries).
+    const legacyPrivateKey = localStorage.getItem('privateKey')
+    const alreadyInQueue =
+      queue.some(e => e.id === identity.userId) ||
+      (legacyPrivateKey ? queue.some(e => e.id === legacyPrivateKey) : false)
+    if (alreadyInQueue) return
 
     addToQueue({
-      id: getPrivateKey(),
-      username: nameInputRef.current!.value,
-      estimated: parseInt(timeInput ?? '1'),
+      id: identity.userId,
+      username: identity.name,
+      estimated: parseInt(timeInput ?? '1')
     })
-
-    nameInputRef.current!.value = ''
   }
 
   const handleMenuClick = () => {
@@ -176,6 +197,8 @@ export default function App() {
         handleClick={handleMenuClick}
         handleOption={setOptions}
         userAppSettings={appSettings}
+        identity={identity}
+        onIdentityChange={next => setIdentity(next)}
       />
       {tabs.length > 0 && (
         <div className='tabRow'>
@@ -191,56 +214,113 @@ export default function App() {
           ))}
         </div>
       )}
-      <div className='banner'>Er Plugin Registration ledig?</div>
-      {displaySpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <div className='availabilityIcon'>
-            <img
-              className='icon'
-              src={queue.length === 0 ? check : cross}
-              alt={queue.length === 0 ? 'Available' : 'Unavailable'}
-            ></img>
-          </div>
+      {identity ? (
+        <>
+          <div className='banner'>Er Plugin Registration ledig?</div>
+          {displaySpinner ? (
+            <Spinner />
+          ) : (
+            <div>
+              <div className='availabilityIcon'>
+                <img
+                  className='icon'
+                  src={queue.length === 0 ? check : cross}
+                  alt={queue.length === 0 ? 'Available' : 'Unavailable'}
+                ></img>
+              </div>
 
-          {queue.length > 0 && (
-            <div className='queueContainer'>
-              <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+              {queue.length > 0 && (
+                <div className='queueContainer'>
+                  <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+                </div>
+              )}
+              <div style={{ height: '100%' }} />
             </div>
           )}
-          <div style={{ height: '100%' }} />
+
+          <form className='queueForm' onSubmit={handleQueueSubmit}>
+            <div>
+              <select className='textinput selectinput' ref={timeInputRef}>
+                <option value='1'>1 time</option>
+                <option value='2'>2 timer</option>
+                <option value='3'>3 timer</option>
+                <option value='4'>4 timer</option>
+                <option value='5'>5 timer</option>
+                <option value='6'>6 timer</option>
+                <option value='7'>7 timer</option>
+                <option value='8'>8 timer</option>
+              </select>
+            </div>
+
+            {(() => {
+              const legacyPrivateKey = localStorage.getItem('privateKey')
+              const userEntry = queue.find(e => e.id === identity.userId || (legacyPrivateKey ? e.id === legacyPrivateKey : false))
+              if (userEntry) {
+                const buttonLabel = isCurrent(userEntry) ? 'Jeg er ferdig' : 'Forlat køen'
+                return (
+                  <button className='button' type='button' onClick={() => displayExitModal(userEntry.id)}>
+                    {buttonLabel}
+                  </button>
+                )
+              }
+
+              const buttonLabel = queue.length === 0 ? 'Overta' : 'Gå i kø'
+              return (
+                <button className='button' type='submit'>
+                  {buttonLabel}
+                </button>
+              )
+            })()}
+
+            <br></br>
+          </form>
+
+          {displayModal && modalEntry && (
+            <ExitModal displayItem={modalEntry.username} closeModalFunction={closeExitModal} />
+          )}
+
+          {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
+        </>
+      ) : (
+        <div className='loginPrompt'>
+          <p>Logg inn</p>
+          <form
+            onSubmit={async e => {
+              e.preventDefault()
+              setLoginError(null)
+              const name = loginName.trim()
+              if (!name) return
+              if (name.length > 50) {
+                setLoginError('Navn er for langt')
+                return
+              }
+
+              try {
+                const { userId, privateKey } = await registerIdentity()
+                const next = { name, userId, privateKey }
+                setStoredIdentity(next)
+                setIdentity(next)
+              } catch (err) {
+                const message = err instanceof Error ? err.message : 'Kunne ikke logge inn'
+                setLoginError(message)
+              }
+            }}
+          >
+            <input
+              type='text'
+              placeholder='Ditt navn'
+              className='textinput'
+              value={loginName}
+              maxLength={50}
+              onChange={e => setLoginName(e.target.value)}
+            />
+            <button className='button' type='submit'>
+              Logg inn
+            </button>
+          </form>
+          {loginError && <div className='loginError'>{loginError}</div>}
         </div>
       )}
-
-      <form className='queueForm' onSubmit={handleSubmit}>
-        <div>
-          <input type='text' placeholder='Ditt navn' className='textinput' ref={nameInputRef} maxLength={7} />
-          <select className='textinput selectinput' ref={timeInputRef}>
-            <option value='1'>1 time</option>
-            <option value='2'>2 timer</option>
-            <option value='3'>3 timer</option>
-            <option value='4'>4 timer</option>
-            <option value='5'>5 timer</option>
-            <option value='6'>6 timer</option>
-            <option value='7'>7 timer</option>
-            <option value='8'>8 timer</option>
-          </select>
-        </div>
-        <button className='button'>{queue.length === 0 ? 'Overta' : 'Gå i kø'}</button>
-        <br></br>
-        {queue.length > 0 && (
-          <div className='contextInfo'>(Når du er ferdig, trykk på ditt ikon for å fjerne deg selv fra køen)</div>
-        )}
-      </form>
-      {displayModal && (
-        <ExitModal
-          displayItem={queue[currentModalUserIndex]?.username ?? ''}
-          closeModalFunction={closeExitModal}
-        />
-      )}
-
-      {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
     </div>
   )
 }

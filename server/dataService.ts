@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { isCurrent, isExited, isPending, isSame, QueueEntry } from '../models/QueueEntry.ts'
+import { loadAuth } from './authService.ts'
 
 /** All stored timestamps (entered, exited) are UTC milliseconds since epoch. */
 const timestamp = () => new Date().toISOString()
@@ -54,7 +55,17 @@ export function exitQueue(tabId: string, toRemove: QueueEntry, privateKey: strin
 
   console.debug(timestamp(), 'Found item to remove:', item)
 
-  if (!force && item.id !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
+  if (!force) {
+    if (!privateKey) throw new Error('Du kan bare slette deg selv fra køen')
+    const authStore = loadAuth()
+    const hasStoredAuth = item.id in authStore
+    if (hasStoredAuth) {
+      if (authStore[item.id] !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
+    } else {
+      // Legacy: entries created before auth store (id was the privateKey)
+      if (item.id !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
+    }
+  }
 
   // Set the exit time of the entry
   item = { ...item, exited: nowUtcMs() }

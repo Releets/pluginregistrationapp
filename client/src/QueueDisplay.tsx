@@ -4,7 +4,7 @@ import { formatTime } from './utils/dateFormat'
 
 export type QueueDisplayProps = {
   items: QueueEntry[]
-  leaveQueueFunction: (index: number) => void
+  leaveQueueFunction: (id: string) => void
 }
 
 function formattedFinishTime(entry: QueueEntry): string {
@@ -19,8 +19,8 @@ export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplay
       {[...items]
         .sort((a, b) => (b.entered ?? 0) - (a.entered ?? 0))
         .map((item, i) => (
-          <div key={item.username}>
-            <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(i)}>
+          <div key={item.id}>
+            <div className={i === 0 ? 'userBox firstBox' : 'userBox'} onClick={() => leaveQueueFunction(item.id)}>
               {item.username}
             </div>
             {i === 0 ? (
