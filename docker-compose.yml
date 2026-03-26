@@ -18,9 +18,11 @@ services:
         - action: rebuild
           path: ./client-dev.dockerfile
         - action: rebuild
+          path: ./docker-compose.yml
+        - action: rebuild
           path: ./client/*.{js,ts,json}
     ports:
-      - '5173:5173'
+      - "5173:5173"
     restart: always
 
   backend:
@@ -38,9 +40,10 @@ services:
           path: ./models
           target: /opt/pluginregistrationapp/models
     ports:
-      - '6969:6969'
+      - "6969:6969"
     environment:
       GODMODE: admin
+      TABS: DELE,Safest,Nordamed
     restart: always
     volumes:
       - ./data:/opt/pluginregistrationapp/data

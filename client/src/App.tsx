@@ -1,11 +1,19 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { AudioMode, defaultSettings, UserSettings } from '../../models/UserSettings'
-import { addToQueue as apiAddToQueue, getSocket, registerIdentity, removeFromQueue as apiRemoveFromQueue } from './api/queueApi'
+import {
+  addToQueue as apiAddToQueue,
+  getSocket,
+  getTabs as apiGetTabs,
+  registerIdentity,
+  removeFromQueue as apiRemoveFromQueue,
+  switchSocketTab,
+  TabConfig,
+} from './api/queueApi'
 import { playAudio } from './utils/audio'
 import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
-import { type StoredIdentity, getStoredIdentity, getUserId, setStoredIdentity } from './utils/identity'
 import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
+import { type StoredIdentity, getStoredIdentity, getUserId, setStoredIdentity } from './utils/identity'
 import './styles/App.css'
 import ExitModal from './ExitModal'
 import HistoryDisplay from './HistoryDisplay'
@@ -20,8 +28,11 @@ import check from './icons/check.svg'
 import cross from './icons/cross.svg'
 
 let counter = 0
+const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
 export default function App() {
+  const [tabs, setTabs] = useState<TabConfig[]>([])
+  const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
   const [modalEntry, setModalEntry] = useState<QueueEntry | null>(null)
@@ -55,8 +66,53 @@ export default function App() {
   }, [appSettings])
 
   useEffect(() => {
+    const loadTabs = async () => {
+      try {
+        const configuredTabs = await apiGetTabs()
+        setTabs(configuredTabs)
+        const availableTabIds = new Set(configuredTabs.map(tab => tab.id))
+        const tabFromUrl = new URLSearchParams(globalThis.location.search).get('tab')
+        const storedTab = localStorage.getItem(LAST_ACTIVE_TAB_STORAGE_KEY)
+        const preferredTab =
+          (tabFromUrl && availableTabIds.has(tabFromUrl) && tabFromUrl) ||
+          (storedTab && availableTabIds.has(storedTab) && storedTab) ||
+          configuredTabs[0]?.id
+
+        setActiveTab(preferredTab)
+
+        if (!preferredTab) return
+        const url = new URL(globalThis.location.href)
+        if (url.searchParams.get('tab') !== preferredTab) {
+          url.searchParams.set('tab', preferredTab)
+          globalThis.history.replaceState(null, '', url.toString())
+        }
+      } catch (err) {
+        console.error('Failed to load tabs:', err)
+        setDisplaySpinner(false)
+        alert('Kunne ikke hente faner fra serveren')
+      }
+    }
+
+    loadTabs()
+  }, [])
+
+  useEffect(() => {
+    if (!activeTab) return
+    localStorage.setItem(LAST_ACTIVE_TAB_STORAGE_KEY, activeTab)
+    const url = new URL(globalThis.location.href)
+    if (url.searchParams.get('tab') === activeTab) return
+    url.searchParams.set('tab', activeTab)
+    globalThis.history.replaceState(null, '', url.toString())
+  }, [activeTab])
+
+  useEffect(() => {
+    if (!activeTab) return
+    setDisplaySpinner(true)
+    setDisplayModal(false)
+    currentHolderRef.current = undefined
     const socket = getSocket()
-    socket.on('stateUpdate', (newState: QueueEntry[]) => {
+    switchSocketTab(activeTab)
+    const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(
         currentHolderRef.current,
@@ -71,11 +127,13 @@ export default function App() {
       currentHolderRef.current = newHolder
       setData(newState)
       setDisplaySpinner(false)
-    })
-    return () => {
-      socket.off('stateUpdate')
     }
-  }, [])
+
+    socket.on('stateUpdate', handleStateUpdate)
+    return () => {
+      socket.off('stateUpdate', handleStateUpdate)
+    }
+  }, [activeTab])
 
   useEffect(() => {
     const stored = loadUserSettingsFromStorage()
@@ -88,10 +146,12 @@ export default function App() {
   }, [])
 
   const addToQueue = (queueEntry: QueueEntry) => {
-    apiAddToQueue(queueEntry)
+    if (!activeTab) return
+    apiAddToQueue(queueEntry, activeTab)
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
+    if (!activeTab) throw new Error('Mangler aktiv fane for å fjerne deg fra køen')
     currentHolderRef.current = undefined
     if (!identity?.privateKey) throw new Error('Du må være logget inn for å forlate køen')
 
@@ -102,7 +162,7 @@ export default function App() {
     const privateKeyToSubmit = user.id === legacyPrivateKey ? legacyPrivateKey : identity.privateKey
     if (!privateKeyToSubmit) throw new Error('Mangler privatnøkkel for fjerning av køplass')
 
-    await apiRemoveFromQueue(user, privateKeyToSubmit, appSettingsRef.current.godmodePassword)
+    await apiRemoveFromQueue(user, privateKeyToSubmit, appSettingsRef.current.godmodePassword, activeTab)
   }
 
   const timeInputRef = useRef<HTMLSelectElement>(null)
@@ -115,8 +175,12 @@ export default function App() {
   }
 
   function closeExitModal(userDidConfirm: boolean) {
-    if (userDidConfirm) {
-      if (modalEntry) removeFromQueue(modalEntry)
+    if (userDidConfirm && modalEntry) {
+      void removeFromQueue(modalEntry).catch(err => {
+        const message = err instanceof Error ? err.message : 'Kunne ikke fjerne deg fra køen'
+        alert(message)
+        console.error(message, err)
+      })
     }
     setDisplayModal(false)
     setModalEntry(null)
@@ -126,13 +190,15 @@ export default function App() {
     event.preventDefault()
     const timeInput = timeInputRef.current?.value
 
+    if (!activeTab) return
     if (!identity) return
     if (!timeInput) return
-    // Legacy compatibility: if we already have a pending queue entry for this client,
-    // prevent joining again (prevents duplicates when upgrading).
+
+    // Prevent joining again (including legacy privateKey-based queue entries).
     const legacyPrivateKey = localStorage.getItem('privateKey')
     const alreadyInQueue =
-      queue.some(e => e.id === identity.userId) || (legacyPrivateKey ? queue.some(e => e.id === legacyPrivateKey) : false)
+      queue.some(e => e.id === identity.userId) ||
+      (legacyPrivateKey ? queue.some(e => e.id === legacyPrivateKey) : false)
     if (alreadyInQueue) return
 
     addToQueue({
@@ -165,46 +231,21 @@ export default function App() {
         identity={identity}
         onIdentityChange={next => setIdentity(next)}
       />
-      {!identity ? (
-        <div className='loginPrompt'>
-          <p>Logg inn</p>
-          <form
-            onSubmit={async e => {
-              e.preventDefault()
-              setLoginError(null)
-              const name = loginName.trim()
-              if (!name) return
-              if (name.length > 50) {
-                setLoginError('Navn er for langt')
-                return
-              }
-
-              try {
-                const { userId, privateKey } = await registerIdentity()
-                const next = { name, userId, privateKey }
-                setStoredIdentity(next)
-                setIdentity(next)
-              } catch (err) {
-                const message = err instanceof Error ? err.message : 'Kunne ikke logge inn'
-                setLoginError(message)
-              }
-            }}
-          >
-            <input
-              type='text'
-              placeholder='Ditt navn'
-              className='textinput'
-              value={loginName}
-              maxLength={50}
-              onChange={e => setLoginName(e.target.value)}
-            />
-            <button className='button' type='submit'>
-              Logg inn
+      {tabs.length > 0 && (
+        <div className='tabRow'>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tabButton ${tab.id === activeTab ? 'activeTab' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              type='button'
+            >
+              {tab.label}
             </button>
-          </form>
-          {loginError && <div className='loginError'>{loginError}</div>}
+          ))}
         </div>
-      ) : (
+      )}
+      {identity ? (
         <>
           <div className='banner'>Er Plugin Registration ledig?</div>
           {displaySpinner ? (
@@ -245,23 +286,16 @@ export default function App() {
             {(() => {
               const legacyPrivateKey = localStorage.getItem('privateKey')
               const userEntry = queue.find(e => e.id === identity.userId || (legacyPrivateKey ? e.id === legacyPrivateKey : false))
-              const inQueue = !!userEntry
-              const buttonLabel = inQueue
-                ? isCurrent(userEntry!)
-                  ? 'Jeg er ferdig'
-                  : 'Forlat køen'
-                : queue.length === 0
-                  ? 'Overta'
-                  : 'Gå i kø'
-
-              if (inQueue) {
+              if (userEntry) {
+                const buttonLabel = isCurrent(userEntry) ? 'Jeg er ferdig' : 'Forlat køen'
                 return (
-                  <button className='button' type='button' onClick={() => displayExitModal(userEntry!.id)}>
+                  <button className='button' type='button' onClick={() => displayExitModal(userEntry.id)}>
                     {buttonLabel}
                   </button>
                 )
               }
 
+              const buttonLabel = queue.length === 0 ? 'Overta' : 'Gå i kø'
               return (
                 <button className='button' type='submit'>
                   {buttonLabel}
@@ -272,10 +306,51 @@ export default function App() {
             <br></br>
           </form>
 
-          {displayModal && modalEntry && <ExitModal displayItem={modalEntry.username} closeModalFunction={closeExitModal} />}
+          {displayModal && modalEntry && (
+            <ExitModal displayItem={modalEntry.username} closeModalFunction={closeExitModal} />
+          )}
 
           {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
         </>
+      ) : (
+        <div className='loginPrompt'>
+          <p>Logg inn</p>
+          <form
+            onSubmit={async e => {
+              e.preventDefault()
+              setLoginError(null)
+              const name = loginName.trim()
+              if (!name) return
+              if (name.length > 50) {
+                setLoginError('Navn er for langt')
+                return
+              }
+
+              try {
+                const { userId, privateKey } = await registerIdentity()
+                const next = { name, userId, privateKey }
+                setStoredIdentity(next)
+                setIdentity(next)
+              } catch (err) {
+                const message = err instanceof Error ? err.message : 'Kunne ikke logge inn'
+                setLoginError(message)
+              }
+            }}
+          >
+            <input
+              type='text'
+              placeholder='Ditt navn'
+              className='textinput'
+              value={loginName}
+              maxLength={50}
+              onChange={e => setLoginName(e.target.value)}
+            />
+            <button className='button' type='submit'>
+              Logg inn
+            </button>
+          </form>
+          {loginError && <div className='loginError'>{loginError}</div>}
+        </div>
       )}
     </div>
   )

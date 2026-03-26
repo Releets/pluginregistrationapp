@@ -13,6 +13,15 @@ To test the production build, run
 docker compose -f docker-compose-production.yml up --build
 ```
 
+## Environment Variables
+
+| Name               | Used by                                | Required          | Example                 | Description                                                                                    |
+| ------------------ | -------------------------------------- | ----------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `GODMODE`          | Server (`backend`)                     | Yes               | `admin`                 | Password that allows privileged queue removal (`godmodePassword`).                             |
+| `TABS`             | Server (`backend`)                     | Yes               | `Safest,Nordamed`       | Comma-separated tab labels. These are normalized to lowercase IDs and exposed via `GET /tabs`. |
+| `VITE_BACKEND_URL` | Client (`frontend`)                    | Yes               | `http://localhost:6969` | Base URL used by the web app for REST + Socket.IO calls.                                       |
+| `BACKEND_URL`      | Docker build arg (`client.dockerfile`) | For Docker builds | `http://localhost:6969` | Build-time value mapped to `VITE_BACKEND_URL` in the client image.                             |
+
 ## Docker Compose Example
 
 ```yaml
@@ -33,6 +42,7 @@ services:
       - '6969:6969'
     environment:
       GODMODE: admin
+      TABS: Safest,Nordamed
     restart: always
     volumes:
       - /mnt/user/appdata/pluginregistrationapp:/opt/pluginregistrationapp/data
