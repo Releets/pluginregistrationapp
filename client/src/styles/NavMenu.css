@@ -1,10 +1,14 @@
 .navmenuwrapper{
-  position: absolute;
+  /* Fixed to viewport so the panel never widens the document; overflow-x clips the
+     translateX(100%) slide animation so it cannot create horizontal scrollbars. */
+  position: fixed;
   color: white;
   top: 0;
   right: 0;
   width: 15em;
+  height: 100vh;
   z-index: 20;
+  overflow-x: hidden;
 }
 .menu{
   position: absolute;
