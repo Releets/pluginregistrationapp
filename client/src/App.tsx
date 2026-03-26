@@ -35,7 +35,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
   const [displayModal, setDisplayModal] = useState(false)
-  const [modalEntry, setModalEntry] = useState<QueueEntry | null>(null)
+  const [modalEntryId, setModalEntryId] = useState<string | null>(null)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
   const [appSettings, setAppSettings] = useState(defaultSettings)
@@ -170,20 +170,29 @@ export default function App() {
   function displayExitModal(id: string) {
     const entry = queue.find(e => e.id === id)
     if (!entry) return
-    setModalEntry(entry)
+    setModalEntryId(entry.id)
     setDisplayModal(true)
   }
 
+  const activeModalEntry = modalEntryId ? queue.find(e => e.id === modalEntryId) ?? null : null
+
+  useEffect(() => {
+    if (displayModal && !activeModalEntry) {
+      setDisplayModal(false)
+      setModalEntryId(null)
+    }
+  }, [displayModal, activeModalEntry])
+
   function closeExitModal(userDidConfirm: boolean) {
-    if (userDidConfirm && modalEntry) {
-      void removeFromQueue(modalEntry).catch(err => {
+    if (userDidConfirm && activeModalEntry) {
+      void removeFromQueue(activeModalEntry).catch(err => {
         const message = err instanceof Error ? err.message : 'Kunne ikke fjerne deg fra køen'
         alert(message)
         console.error(message, err)
       })
     }
     setDisplayModal(false)
-    setModalEntry(null)
+    setModalEntryId(null)
   }
 
   const handleQueueSubmit = (event: FormEvent) => {
@@ -306,8 +315,8 @@ export default function App() {
             <br></br>
           </form>
 
-          {displayModal && modalEntry && (
-            <ExitModal displayItem={modalEntry.username} closeModalFunction={closeExitModal} />
+          {displayModal && activeModalEntry && (
+            <ExitModal displayItem={activeModalEntry.username ?? 'denne brukeren'} closeModalFunction={closeExitModal} />
           )}
 
           {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
