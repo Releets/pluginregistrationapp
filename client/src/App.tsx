@@ -124,7 +124,7 @@ export default function App() {
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
-    if (!activeTab) return
+    if (!activeTab) throw new Error('Mangler aktiv fane for å fjerne deg fra køen')
     currentHolderRef.current = undefined
     if (!identity?.privateKey) throw new Error('Du må være logget inn for å forlate køen')
 
@@ -148,8 +148,12 @@ export default function App() {
   }
 
   function closeExitModal(userDidConfirm: boolean) {
-    if (userDidConfirm) {
-      if (modalEntry) removeFromQueue(modalEntry)
+    if (userDidConfirm && modalEntry) {
+      void removeFromQueue(modalEntry).catch(err => {
+        const message = err instanceof Error ? err.message : 'Kunne ikke fjerne deg fra køen'
+        alert(message)
+        console.error(message, err)
+      })
     }
     setDisplayModal(false)
     setModalEntry(null)
