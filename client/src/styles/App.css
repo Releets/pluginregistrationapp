@@ -38,6 +38,29 @@ body {
   flex: 1;
   margin-bottom: 2em;
 }
+
+.loginPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 2em;
+}
+
+.loginPrompt p {
+  color: rgb(255, 255, 255);
+  font-family: Lato, sans-serif;
+  margin-bottom: 1em;
+}
+
+.loginError {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
 .contextInfo {
   margin-bottom: 2em;
   margin-top: 1em;
