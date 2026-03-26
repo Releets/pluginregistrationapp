@@ -1,4 +1,4 @@
-.navmenuwrapper{
+.navmenuwrapper {
   /* Fixed to viewport so the panel never widens the document; overflow-x clips the
      translateX(100%) slide animation so it cannot create horizontal scrollbars. */
   position: fixed;
@@ -9,12 +9,14 @@
   height: 100vh;
   z-index: 20;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
-.menu{
+.menu {
   position: absolute;
   top: 0;
   right: 0;
-  width: inherit;
+  width: 100%;
+  box-sizing: border-box;
   background-color: #003230;
   box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2.6px 2.6px;
   z-index: 21;
@@ -34,13 +36,13 @@
   /* Space so the panel content doesn't get covered by the burger icon. */
   padding: 3.6em 0.75em 1em 0.75em;
 }
-.visible{
+.visible {
   transform: translateX(0);
 }
-.invisible{
+.invisible {
   transform: translateX(100%);
 }
-.options{
+.options {
   margin: 0;
   padding: 0;
   list-style-type: none;
@@ -48,28 +50,30 @@
   display: flex;
   flex-direction: column;
   gap: 0.75em;
+  width: 100%;
 }
 
-.menuFooter{
+.menuFooter {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  width: 100%;
 }
 
-.menuFooter p{
+.menuFooter p {
   margin: 0;
   font-size: 60%;
 }
 
-.githubIssueButton{
+.githubIssueButton {
   background-color: rgb(4, 49, 4);
   box-shadow: 0 5px 0 rgb(1, 39, 23);
   color: white;
   padding: 0.5em 1em;
   text-decoration: none;
   text-transform: uppercase;
-  align-self: flex-start;
+  align-self: stretch;
   width: 100%;
   text-align: center;
   box-sizing: border-box;
@@ -84,13 +88,16 @@
 }
 
 .nameContainer {
-  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   margin-bottom: 0.5em;
 }
 
 .nameContainer label {
   display: block;
   margin-bottom: 0.25em;
+  margin-left: 0;
 }
 
 .nameField {
@@ -102,23 +109,35 @@
   width: 100%;
   max-width: 12em;
   box-sizing: border-box;
-  text-align: left;
 }
 
-.passwordContainer{
-  padding-left: 0;
+.passwordContainer {
+  display: flex;
+  width: 100%;
 }
 
-.passwordField{
+.passwordField {
   margin-top: 1em;
   border-radius: 5px;
   background-color: #dfe1e4;
   border-style: solid;
-  text-align: left;
   padding-left: 0.5em;
+  padding-right: 0.5em;
+  width: 100%;
+  max-width: 12em;
+  box-sizing: border-box;
 }
 
-.burger{
+.checkbox-wrapper {
+  display: inline-flex;
+  gap: 0.5em;
+}
+
+.checkbox-wrapper label {
+  margin-left: 0;
+}
+
+.burger {
   position: absolute;
   top: 2em;
   right: 2em;
@@ -128,7 +147,7 @@
   z-index: 30;
   height: 25px;
 }
-.line{
+.line {
   position: relative;
   z-index: 9;
   width: 40px;
@@ -136,14 +155,14 @@
   border-radius: 5px;
   background-color: white;
 }
-.line1{
+.line1 {
   top: 0px;
 }
-.line2{
+.line2 {
   position: relative;
   top: 9px;
 }
-.line3{
+.line3 {
   top: 18px;
 }
 /* Forward Animations */
@@ -155,7 +174,7 @@
   animation: middle 0.5s forwards;
 }
 
-.animate .line3{
+.animate .line3 {
   animation: bottom 0.5s forwards;
 }
 
@@ -173,20 +192,50 @@
 }
 
 @keyframes top {
-  0%{top: 0px; transform: rotate(0deg);}
-  50%{top: 12px;transform: rotate(0deg);}
-  100%{top: 12px; transform: rotate(-45deg);}
+  0% {
+    top: 0px;
+    transform: rotate(0deg);
+  }
+  50% {
+    top: 12px;
+    transform: rotate(0deg);
+  }
+  100% {
+    top: 12px;
+    transform: rotate(-45deg);
+  }
 }
 @keyframes middle {
-  0%{visibility: visible; opacity: 1}
-  49%{visibility: visible; opacity: 1}
-  51%{visibility: hidden; opacity: 0}
-  100%{visibility: hidden; opacity: 0}
+  0% {
+    visibility: visible;
+    opacity: 1;
+  }
+  49% {
+    visibility: visible;
+    opacity: 1;
+  }
+  51% {
+    visibility: hidden;
+    opacity: 0;
+  }
+  100% {
+    visibility: hidden;
+    opacity: 0;
+  }
 }
 @keyframes bottom {
-  0%{top: 18px; transform: rotate(0deg);}
-  50%{top: 6px;transform: rotate(0deg);}
-  100%{top: 6px; transform: rotate(45deg);}
+  0% {
+    top: 18px;
+    transform: rotate(0deg);
+  }
+  50% {
+    top: 6px;
+    transform: rotate(0deg);
+  }
+  100% {
+    top: 6px;
+    transform: rotate(45deg);
+  }
 }
 
 label {
@@ -208,7 +257,7 @@ label {
 
 .check::before {
   bottom: -6px;
-  content: "";
+  content: '';
   left: -6px;
   position: absolute;
   right: -6px;
@@ -222,7 +271,7 @@ label {
 .check::after {
   background-color: #fff;
   border-radius: 50%;
-  content: "";
+  content: '';
   height: 14px;
   left: 3px;
   position: absolute;
