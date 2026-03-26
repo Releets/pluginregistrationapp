@@ -7,6 +7,8 @@ on:
       - main
     paths:
       - server/**
+      - server.dockerfile
+      - .github/workflows/docker-build-server.yml
 
 jobs:
   docker:
