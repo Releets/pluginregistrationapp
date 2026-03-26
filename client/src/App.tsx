@@ -7,6 +7,7 @@ import {
   getTabs as apiGetTabs,
   registerIdentity,
   removeFromQueue as apiRemoveFromQueue,
+  switchSocketTab,
   TabConfig,
 } from './api/queueApi'
 import { playAudio } from './utils/audio'
@@ -84,7 +85,8 @@ export default function App() {
     setDisplaySpinner(true)
     setDisplayModal(false)
     currentHolderRef.current = undefined
-    const socket = getSocket(activeTab)
+    const socket = getSocket()
+    switchSocketTab(activeTab)
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(

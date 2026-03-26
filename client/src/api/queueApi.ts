@@ -25,15 +25,20 @@ function ensureAxiosBaseUrl(): void {
   }
 }
 
-export function getSocket(tabId: string): Socket {
+export function getSocket(): Socket {
   ensureAxiosBaseUrl()
-  if (!socketInstance || socketTabId !== tabId) {
-    socketInstance?.disconnect()
+  if (!socketInstance) {
     const adr = getBackendUrl()
-    socketInstance = io(adr, { transports: ['websocket'], query: { tab: tabId } })
-    socketTabId = tabId
+    socketInstance = io(adr, { transports: ['websocket'] })
   }
   return socketInstance
+}
+
+export function switchSocketTab(tabId: string): void {
+  const socket = getSocket()
+  if (socketTabId === tabId) return
+  socket.emit('switchTab', tabId)
+  socketTabId = tabId
 }
 
 export async function getTabs(): Promise<TabConfig[]> {

@@ -109,15 +109,28 @@ app.post('/remove', (req: Request, res: Response) => {
 
 io.on('connection', socket => {
   console.debug(timestamp(), 'Connected', socket.id)
-  const tabId = normalizeTabId(socket.handshake.query.tab)
-  if (!tabId) {
-    socket.emit('error', 'Missing or invalid tab')
-    socket.disconnect()
-    return
+  let activeTabId: string | null = null
+
+  const switchTab = (rawTabId: unknown) => {
+    const tabId = normalizeTabId(rawTabId)
+    if (!tabId) {
+      socket.emit('error', 'Missing or invalid tab')
+      return
+    }
+    if (activeTabId === tabId) return
+
+    if (activeTabId) {
+      socket.leave(activeTabId)
+    }
+    activeTabId = tabId
+    socket.join(tabId)
+    socket.emit('stateUpdate', loadData(tabId)) // Send tab state to socket after room switch
   }
 
-  socket.join(tabId)
-  socket.emit('stateUpdate', loadData(tabId)) // Send tab state to newly connected client
+  // Keep compatibility with older clients that still pass `tab` on handshake.
+  switchTab(socket.handshake.query.tab)
+
+  socket.on('switchTab', switchTab)
 
   socket.on('disconnect', () => {
     console.debug(timestamp(), 'Disconnected', socket.id)
