@@ -32,5 +32,6 @@ jobs:
           build-args: |
             BACKEND_URL=${{ vars.BACKEND_URL }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          # arm64 build currently fails under QEMU with Node 22 (Illegal instruction)
+          platforms: linux/amd64
           tags: ${{ vars.DOCKER_USERNAME }}/pluginregistrationapp-client
