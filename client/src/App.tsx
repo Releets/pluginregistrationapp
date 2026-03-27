@@ -130,7 +130,6 @@ export default function App() {
     setDisplayModal(false)
     currentHolderRef.current = undefined
     const socket = getSocket()
-    switchSocketTab(activeTab)
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, getUserId())
@@ -144,8 +143,17 @@ export default function App() {
       setDisplaySpinner(false)
     }
 
+    // Listen before switching to avoid missing an immediate initial update.
     socket.on('stateUpdate', handleStateUpdate)
+    switchSocketTab(activeTab)
+
+    // Failsafe in case no websocket update arrives.
+    const spinnerFailsafe = setTimeout(() => {
+      setDisplaySpinner(false)
+    }, 8000)
+
     return () => {
+      clearTimeout(spinnerFailsafe)
       socket.off('stateUpdate', handleStateUpdate)
     }
   }, [activeTab])
