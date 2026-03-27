@@ -2,14 +2,14 @@ export type AudioMode = 'tobias' | 'normal'
 
 export type UserSettings = {
   hideLog: boolean
-  showUptime: boolean
+  hideUptime: boolean
   audioMode: AudioMode
   godmodePassword: string
 }
 
 export const defaultSettings: UserSettings = {
   hideLog: false,
-  showUptime: false,
+  hideUptime: true,
   audioMode: 'tobias',
   godmodePassword: '',
 }

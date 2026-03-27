@@ -342,7 +342,7 @@ export default function App() {
           )}
 
           {!appSettings.hideLog && <HistoryDisplay data={data} />}
-          {appSettings.showUptime && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
+          {!appSettings.hideUptime && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
         </>
       ) : (
         <div className='loginPrompt'>
