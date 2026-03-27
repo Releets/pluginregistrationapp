@@ -5,10 +5,12 @@ import {
   addToQueue as apiAddToQueue,
   getSocket,
   getTabs as apiGetTabs,
+  getUptimeSummary as apiGetUptimeSummary,
   registerIdentity,
   removeFromQueue as apiRemoveFromQueue,
   switchSocketTab,
   TabConfig,
+  UptimeSummary,
 } from './api/queueApi'
 import { playAudio } from './utils/audio'
 import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
@@ -20,6 +22,7 @@ import HistoryDisplay from './HistoryDisplay'
 import NavMenu from './NavMenu'
 import QueueDisplay from './QueueDisplay'
 import Spinner from './Spinner'
+import UptimeDisplay from './UptimeDisplay'
 import queueFreeSound from './audio/queue_free.mp3'
 import queueFreeSoundTob from './audio/queue_free_tob.mp3'
 import queueKickSound from './audio/queue_kick.mp3'
@@ -42,6 +45,7 @@ export default function App() {
   const [identity, setIdentity] = useState<StoredIdentity | null>(() => getStoredIdentity())
   const [loginName, setLoginName] = useState<string>(() => getStoredIdentity()?.name ?? '')
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary | null>(null)
 
   const queue = data.filter(e => isPending(e))
 
@@ -94,6 +98,21 @@ export default function App() {
     }
 
     loadTabs()
+  }, [])
+
+  useEffect(() => {
+    const loadUptime = async () => {
+      try {
+        const summary = await apiGetUptimeSummary()
+        setUptimeSummary(summary)
+      } catch (err) {
+        console.error('Failed to load uptime summary:', err)
+      }
+    }
+
+    void loadUptime()
+    const uptimeInterval = setInterval(() => void loadUptime(), 1000 * 60 * 5)
+    return () => clearInterval(uptimeInterval)
   }, [])
 
   useEffect(() => {
@@ -240,6 +259,7 @@ export default function App() {
         identity={identity}
         onIdentityChange={next => setIdentity(next)}
       />
+      {uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
       {tabs.length > 0 && (
         <div className='tabRow'>
           {tabs.map(tab => (

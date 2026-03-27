@@ -4,6 +4,7 @@ import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import { register } from './authService.ts'
 import { enterQueue, exitQueue, loadData, removeOldEntries } from './dataService.ts'
+import { getUptimeSummary, pruneUptimeLogs, recordUptimeHeartbeat } from './uptimeService.ts'
 import process from 'node:process'
 import { QueueEntry } from '../models/QueueEntry.ts'
 
@@ -62,6 +63,17 @@ const timestamp = () => new Date().toISOString()
 
 app.get('/tabs', (_req: Request, res: Response) => {
   res.status(200).json(tabs)
+})
+
+app.get('/uptime', (_req: Request, res: Response) => {
+  try {
+    pruneUptimeLogs()
+    res.status(200).json(getUptimeSummary())
+  } catch (err) {
+    if (!(err instanceof Error)) throw err
+    console.error(timestamp(), 'Error reading uptime data:', err.message)
+    res.status(500).send(err.message)
+  }
 })
 
 // API to register a new user (returns userId + privateKey for client to store)
@@ -139,6 +151,12 @@ io.on('connection', socket => {
 
 server.listen(port, () => {
   console.log(timestamp(), 'Server is running on port', port)
+
+  // Heartbeat for uptime monitoring.
+  recordUptimeHeartbeat()
+  setInterval(() => {
+    recordUptimeHeartbeat()
+  }, 1000 * 60 * 60)
 
   // Throwing people out of queue every minute
   setInterval(() => {

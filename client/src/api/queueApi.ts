@@ -8,6 +8,22 @@ export type TabConfig = {
   label: string
 }
 
+export type UptimeDayStatus = 'green' | 'yellow' | 'red'
+
+export type UptimeDay = {
+  date: string
+  expected: number
+  actual: number
+  status: UptimeDayStatus
+}
+
+export type UptimeSummary = {
+  uptimePercentage: number
+  totalExpected: number
+  totalActual: number
+  days: UptimeDay[]
+}
+
 let socketInstance: Socket | null = null
 let socketTabId: string | null = null
 
@@ -45,6 +61,13 @@ export async function getTabs(): Promise<TabConfig[]> {
   ensureAxiosBaseUrl()
   const adr = getBackendUrl()
   const response = await axios.get<TabConfig[]>(adr + '/tabs')
+  return response.data
+}
+
+export async function getUptimeSummary(): Promise<UptimeSummary> {
+  ensureAxiosBaseUrl()
+  const adr = getBackendUrl()
+  const response = await axios.get<UptimeSummary>(adr + '/uptime')
   return response.data
 }
 

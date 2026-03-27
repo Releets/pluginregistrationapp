@@ -14,6 +14,66 @@ body {
   align-items: center;
 }
 
+.uptimeCard {
+  width: min(960px, calc(100% - 2rem));
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #93c9c6;
+  border-radius: 8px;
+  background: #f9fffe;
+  color: #233230;
+}
+
+.uptimeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.65rem;
+  font-family: Lato, sans-serif;
+}
+
+.uptimeTitle {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.uptimePercentage {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.uptimeTimeline {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  gap: 0.22rem;
+}
+
+.uptimeBlock {
+  height: 1.8rem;
+  border-radius: 3px;
+}
+
+.uptimeBlock-green {
+  background: #2e9b52;
+}
+
+.uptimeBlock-yellow {
+  background: #d9b43d;
+}
+
+.uptimeBlock-red {
+  background: #c74c4c;
+}
+
+.uptimeFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.45rem;
+  color: #4f6967;
+  font-size: 0.82rem;
+}
+
 .tabRow {
   display: flex;
   gap: 0.5em;
