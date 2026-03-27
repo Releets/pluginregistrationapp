@@ -6,18 +6,19 @@ type Props = {
 
 export default function UptimeDisplay({ uptime }: Readonly<Props>) {
   return (
-    <div className='uptimeCard'>
+    <div className='uptimeDock'>
       <div className='uptimeHeader'>
-        <span className='uptimeTitle'>Cursor App</span>
         <span className='uptimePercentage'>{uptime.uptimePercentage.toFixed(1)}% uptime</span>
       </div>
       <div className='uptimeTimeline'>
         {uptime.days.map(day => (
-          <div
-            key={day.date}
-            className={`uptimeBlock uptimeBlock-${day.status}`}
-            title={`${day.date}: ${day.actual}/${day.expected} checks`}
-          />
+          <div key={day.date} className='uptimeDotWrap'>
+            <div className={`uptimeDot uptimeDot-${day.status}`} />
+            <div className='uptimeTooltip'>
+              <div>{day.date}</div>
+              <div>{((day.actual / Math.max(day.expected, 1)) * 100).toFixed(1)}% uptime</div>
+            </div>
+          </div>
         ))}
       </div>
       <div className='uptimeFooter'>

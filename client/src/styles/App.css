@@ -14,64 +14,99 @@ body {
   align-items: center;
 }
 
-.uptimeCard {
-  width: min(960px, calc(100% - 2rem));
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  padding: 0.8rem 1rem;
-  border: 1px solid #93c9c6;
-  border-radius: 8px;
-  background: #f9fffe;
-  color: #233230;
+.uptimeDock {
+  width: min(620px, calc(100% - 1.5rem));
+  margin-top: auto;
+  margin-bottom: 0.8rem;
+  padding: 0.3rem 0.2rem;
+  color: #d7f4f1;
 }
 
 .uptimeHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: baseline;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.45rem;
   font-family: Lato, sans-serif;
 }
 
-.uptimeTitle {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
 .uptimePercentage {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  color: #e6fffc;
 }
 
 .uptimeTimeline {
-  display: grid;
-  grid-template-columns: repeat(30, minmax(0, 1fr));
-  gap: 0.22rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.2rem;
 }
 
-.uptimeBlock {
-  height: 1.8rem;
-  border-radius: 3px;
+.uptimeDotWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.uptimeBlock-green {
+.uptimeDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  cursor: default;
+}
+
+.uptimeDotWrap:hover .uptimeDot {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px rgb(240 255 253 / 16%);
+}
+
+.uptimeTooltip {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  opacity: 0;
+  pointer-events: none;
+  font-size: 0.68rem;
+  line-height: 1.28;
+  white-space: nowrap;
+  color: #eefaf8;
+  background: #102e2c;
+  border: 1px solid #3c716d;
+  border-radius: 8px;
+  padding: 0.34rem 0.44rem;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  z-index: 10;
+}
+
+.uptimeDotWrap:hover .uptimeTooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.uptimeDot-green {
   background: #2e9b52;
 }
 
-.uptimeBlock-yellow {
+.uptimeDot-yellow {
   background: #d9b43d;
 }
 
-.uptimeBlock-red {
+.uptimeDot-red {
   background: #c74c4c;
 }
 
 .uptimeFooter {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.45rem;
-  color: #4f6967;
-  font-size: 0.82rem;
+  margin-top: 0.38rem;
+  color: #9fcfca;
+  font-size: 0.68rem;
 }
 
 .tabRow {
