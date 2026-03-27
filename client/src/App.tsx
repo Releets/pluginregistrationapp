@@ -341,7 +341,7 @@ export default function App() {
             />
           )}
 
-          {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
+          {!appSettings.hideLog && <HistoryDisplay data={data} />}
           {appSettings.showUptime && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
         </>
       ) : (
