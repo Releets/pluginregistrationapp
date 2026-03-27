@@ -43,14 +43,20 @@
   transform: translateX(100%);
 }
 .options {
-  margin: 0;
+  margin: 1em 0 0 0;
   padding: 0;
   list-style-type: none;
   text-align: left;
+  align-items: center;
   display: flex;
   flex-direction: column;
   gap: 0.75em;
   width: 100%;
+}
+
+.options li{
+  width: 100%;
+  max-width: 10em;
 }
 
 .menuFooter {
@@ -101,7 +107,6 @@
 }
 
 .nameField {
-  margin-top: 0.25em;
   border-radius: 5px;
   background-color: #dfe1e4;
   border-style: solid;
@@ -109,6 +114,8 @@
   width: 100%;
   max-width: 12em;
   box-sizing: border-box;
+  margin: 0.25em auto 0 auto;
+  display: block; 
 }
 
 .passwordContainer {
@@ -129,7 +136,9 @@
 }
 
 .checkbox-wrapper {
-  display: inline-flex;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   gap: 0.5em;
 }
 
