@@ -51,24 +51,18 @@ body {
 
 .uptimeDot {
   width: 8px;
-  height: 8px;
+  height: 32px;
   border-radius: 999px;
   transition:
-    transform 0.14s ease,
-    box-shadow 0.14s ease;
-  cursor: pointer;
-}
-
-.uptimeDotWrap:hover .uptimeDot {
-  transform: scale(1.5);
-  box-shadow: 0 0 0 2px rgb(240 255 253 / 16%);
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 .uptimeTooltip {
   position: absolute;
-  bottom: 18px;
+  bottom: 40px;
   left: 50%;
-  transform: translateX(-50%) translateY(2px);
+  transform: translateX(-50%) translateY(4px);
   opacity: 0;
   pointer-events: none;
   font-size: 0.68rem;
@@ -91,7 +85,7 @@ body {
 }
 
 .uptimeDot-green {
-  background: #2e9b52;
+  background: #43a047;
 }
 
 .uptimeDot-yellow {
@@ -99,7 +93,7 @@ body {
 }
 
 .uptimeDot-red {
-  background: #c74c4c;
+  background: rgb(210, 56, 56);
 }
 
 .uptimeFooter {
