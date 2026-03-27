@@ -259,7 +259,6 @@ export default function App() {
         identity={identity}
         onIdentityChange={next => setIdentity(next)}
       />
-      {uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
       {tabs.length > 0 && (
         <div className='tabRow'>
           {tabs.map(tab => (
@@ -340,6 +339,7 @@ export default function App() {
           )}
 
           {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
+          {appSettings.showUptime && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
         </>
       ) : (
         <div className='loginPrompt'>

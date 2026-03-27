@@ -77,6 +77,17 @@ export default function NavMenu({
               <input
                 type='checkbox'
                 className='check'
+                checked={userAppSettings.showUptime}
+                onChange={e => handleOption('showUptime', e.target.checked)}
+              />
+              <label>Show Uptime</label>
+            </div>
+          </li>
+          <li>
+            <div className='checkbox-wrapper'>
+              <input
+                type='checkbox'
+                className='check'
                 checked={userAppSettings.hideLog}
                 onChange={e => handleOption('hideLog', e.target.checked)}
               />
