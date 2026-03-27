@@ -136,9 +136,9 @@
 }
 
 .checkbox-wrapper {
-  display: flex;          /* ADD */
-  align-items: center;    /* ADD */
-  justify-content: flex-start; /* ADD */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   gap: 0.5em;
 }
 
