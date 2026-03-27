@@ -301,14 +301,11 @@ export default function App() {
           <form className='queueForm' onSubmit={handleQueueSubmit}>
             <div>
               <select className='textinput selectinput' ref={timeInputRef}>
-                <option value='1'>1 time</option>
-                <option value='2'>2 timer</option>
-                <option value='3'>3 timer</option>
-                <option value='4'>4 timer</option>
-                <option value='5'>5 timer</option>
-                <option value='6'>6 timer</option>
-                <option value='7'>7 timer</option>
-                <option value='8'>8 timer</option>
+                {Array.from({ length: 8 }, (_, i) => i + 1).map(hours => (
+                  <option key={hours} value={hours}>
+                    {hours} time{hours === 1 ? '' : 'r'}
+                  </option>
+                ))}
               </select>
             </div>
 
