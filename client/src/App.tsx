@@ -147,13 +147,7 @@ export default function App() {
     socket.on('stateUpdate', handleStateUpdate)
     switchSocketTab(activeTab)
 
-    // Failsafe in case no websocket update arrives.
-    const spinnerFailsafe = setTimeout(() => {
-      setDisplaySpinner(false)
-    }, 8000)
-
     return () => {
-      clearTimeout(spinnerFailsafe)
       socket.off('stateUpdate', handleStateUpdate)
     }
   }, [activeTab])

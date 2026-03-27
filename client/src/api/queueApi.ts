@@ -45,7 +45,11 @@ export function getSocket(): Socket {
   ensureAxiosBaseUrl()
   if (!socketInstance) {
     const adr = getBackendUrl()
-    socketInstance = io(adr, { transports: ['websocket'] })
+    // Allow long-polling fallback when websocket upgrades fail (seen in some browsers/dev setups).
+    socketInstance = io(adr, { transports: ['polling', 'websocket'] })
+    socketInstance.on('connect_error', err => {
+      console.warn(timestamp(), 'Socket connection error:', err.message)
+    })
   }
   return socketInstance
 }
