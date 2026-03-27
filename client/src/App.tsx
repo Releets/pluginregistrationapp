@@ -133,11 +133,7 @@ export default function App() {
     switchSocketTab(activeTab)
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
-      const soundToPlay = getSoundToPlayForStateUpdate(
-        currentHolderRef.current,
-        newState,
-        getUserId()
-      )
+      const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, getUserId())
       if (soundToPlay === 'kick') {
         playAudio(soundsRef.current[appSettingsRef.current.audioMode].kick)
       } else if (soundToPlay === 'free') {
@@ -193,7 +189,7 @@ export default function App() {
     setDisplayModal(true)
   }
 
-  const activeModalEntry = modalEntryId ? queue.find(e => e.id === modalEntryId) ?? null : null
+  const activeModalEntry = modalEntryId ? (queue.find(e => e.id === modalEntryId) ?? null) : null
 
   useEffect(() => {
     if (displayModal && !activeModalEntry) {
@@ -232,7 +228,7 @@ export default function App() {
     addToQueue({
       id: identity.userId,
       username: identity.name,
-      estimated: parseInt(timeInput ?? '1')
+      estimated: parseInt(timeInput ?? '1'),
     })
   }
 
@@ -259,6 +255,8 @@ export default function App() {
         identity={identity}
         onIdentityChange={next => setIdentity(next)}
       />
+
+      {/* TABS */}
       {tabs.length > 0 && (
         <div className='tabRow'>
           {tabs.map(tab => (
@@ -273,29 +271,30 @@ export default function App() {
           ))}
         </div>
       )}
+
+      {/* MAIN CONTENT */}
       {identity ? (
         <>
           <div className='banner'>Er Plugin Registration ledig?</div>
-          {displaySpinner ? (
-            <Spinner />
-          ) : (
-            <div>
-              <div className='availabilityIcon'>
+          <div style={{ flex: 1 }}>
+            {displaySpinner ? (
+              <Spinner />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <img
                   className='icon'
                   src={queue.length === 0 ? check : cross}
                   alt={queue.length === 0 ? 'Available' : 'Unavailable'}
-                ></img>
-              </div>
+                />
 
-              {queue.length > 0 && (
-                <div className='queueContainer'>
-                  <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
-                </div>
-              )}
-              <div style={{ height: '100%' }} />
-            </div>
-          )}
+                {queue.length > 0 && (
+                  <div className='queueContainer'>
+                    <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <form className='queueForm' onSubmit={handleQueueSubmit}>
             <div>
@@ -313,7 +312,9 @@ export default function App() {
 
             {(() => {
               const legacyPrivateKey = localStorage.getItem('privateKey')
-              const userEntry = queue.find(e => e.id === identity.userId || (legacyPrivateKey ? e.id === legacyPrivateKey : false))
+              const userEntry = queue.find(
+                e => e.id === identity.userId || (legacyPrivateKey ? e.id === legacyPrivateKey : false)
+              )
               if (userEntry) {
                 const buttonLabel = isCurrent(userEntry) ? 'Jeg er ferdig' : 'Forlat køen'
                 return (
@@ -335,7 +336,10 @@ export default function App() {
           </form>
 
           {displayModal && activeModalEntry && (
-            <ExitModal displayItem={activeModalEntry.username ?? 'denne brukeren'} closeModalFunction={closeExitModal} />
+            <ExitModal
+              displayItem={activeModalEntry.username ?? 'denne brukeren'}
+              closeModalFunction={closeExitModal}
+            />
           )}
 
           {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
