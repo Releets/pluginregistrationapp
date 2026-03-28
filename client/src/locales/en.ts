@@ -2,6 +2,7 @@ export const language = {
   metadata: {
     name: 'English',
     code: 'en',
+    codes: ['en', 'en-US', 'en-GB'],
     emoji: '🇬🇧',
   },
   main: {

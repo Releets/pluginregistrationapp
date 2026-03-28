@@ -1,10 +1,11 @@
 import { useContext } from 'react'
-import { LanguageContext, type LanguageContextValue } from './LanguageContext'
+import { Language } from '../locales'
+import { LanguageContext } from './LanguageContext'
 
-export function useLanguage(): LanguageContextValue {
+export default function useLanguage(): Language {
   const ctx = useContext(LanguageContext)
   if (!ctx) {
-    throw new Error('useLanguage must be used within a LanguageProvider')
+    throw new Error('useLanguage must be used within an LanguageProvider')
   }
   return ctx
 }

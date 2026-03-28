@@ -1,18 +1,12 @@
+import { LanguageCode, languages } from '../client/src/locales'
+
 export type AudioMode = 'tobias' | 'normal'
 
-/** Supported UI locales (English is the source language for copy). */
-export type AppLocale = 'en' | 'no' | 'nl'
-
-export type UserSettings = {
-  hideLog: boolean
-  audioMode: AudioMode
-  godmodePassword: string
-  language: AppLocale
-}
-
-export const defaultSettings: UserSettings = {
-  hideLog: false,
-  audioMode: 'tobias',
+export const defaultSettings = {
+  hideLog: false as boolean,
+  audioMode: 'tobias' as AudioMode,
   godmodePassword: '',
-  language: 'en',
+  language: languages.en.metadata.code as LanguageCode,
 }
+
+export type UserSettings = typeof defaultSettings

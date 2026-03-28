@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import './styles/NavMenu.css'
-import type { AppLocale, UserSettings } from '../../models/UserSettings'
+import type { AppLocale } from '../../models/UserSettings'
+import { useAppSettings } from './context/useAppSettings'
 import { localeMetadataByLocale } from './locales'
 import { useLanguage } from './context/useLanguage'
-import { loadUserSettingsFromStorage } from './utils/settings'
 import type { StoredIdentity } from './utils/identity'
 import { setStoredIdentity } from './utils/identity'
 
@@ -13,8 +13,6 @@ export type NavMenuProps = {
   isReversed: boolean
   animationKeyCounter: number
   handleClick: () => void
-  handleOption: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void
-  userAppSettings: UserSettings
   identity: StoredIdentity | null
   onIdentityChange: (next: StoredIdentity) => void
 }
@@ -23,12 +21,11 @@ export default function NavMenu({
   isReversed,
   animationKeyCounter,
   handleClick,
-  handleOption,
-  userAppSettings,
   identity,
   onIdentityChange,
 }: Readonly<NavMenuProps>) {
   const { t } = useLanguage()
+  const { appSettings, setLanguage, setHideLog, setAudioMode, setGodmodePassword } = useAppSettings()
   const godmodePasswordRef = useRef<HTMLInputElement>(null)
   const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
 
@@ -37,11 +34,10 @@ export default function NavMenu({
   }, [identity?.name])
 
   useEffect(() => {
-    const stored = loadUserSettingsFromStorage()
-    if (stored?.godmodePassword != null && godmodePasswordRef.current) {
-      godmodePasswordRef.current.value = stored.godmodePassword
+    if (appSettings.godmodePassword != null && godmodePasswordRef.current) {
+      godmodePasswordRef.current.value = appSettings.godmodePassword
     }
-  }, [])
+  }, [appSettings.godmodePassword])
 
   return (
     <div className='navmenuwrapper'>
@@ -83,8 +79,8 @@ export default function NavMenu({
               <select
                 id='app-language-select'
                 className='nameField'
-                value={userAppSettings.language}
-                onChange={e => handleOption('language', e.target.value as AppLocale)}
+                value={appSettings.language}
+                onChange={e => setLanguage(e.target.value as AppLocale)}
               >
                 {APP_LOCALES.map(code => {
                   const meta = localeMetadataByLocale[code]
@@ -102,8 +98,8 @@ export default function NavMenu({
               <input
                 type='checkbox'
                 className='check'
-                checked={userAppSettings.hideLog}
-                onChange={e => handleOption('hideLog', e.target.checked)}
+                checked={appSettings.hideLog}
+                onChange={e => setHideLog(e.target.checked)}
               />
               <label>{t.nav.hideLog}</label>
             </div>
@@ -113,8 +109,8 @@ export default function NavMenu({
               <input
                 type='checkbox'
                 className='check'
-                checked={userAppSettings.audioMode === 'tobias'}
-                onChange={e => handleOption('audioMode', e.target.checked ? 'tobias' : 'normal')}
+                checked={appSettings.audioMode === 'tobias'}
+                onChange={e => setAudioMode(e.target.checked ? 'tobias' : 'normal')}
               />
               <label>{t.nav.tobiasMode}</label>
             </div>
@@ -126,7 +122,7 @@ export default function NavMenu({
                 ref={godmodePasswordRef}
                 type='password'
                 placeholder={t.nav.godmode}
-                onChange={e => handleOption('godmodePassword', e.target.value)}
+                onChange={e => setGodmodePassword(e.target.value)}
               />
             </div>
           </li>

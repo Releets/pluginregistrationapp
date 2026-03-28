@@ -1,23 +1,40 @@
-import { createContext, useMemo, type ReactNode } from 'react'
-import type { AppLocale } from '../../../models/UserSettings'
-import type { Language } from '../locales/en'
+import { createContext, useEffect, useMemo, type ReactNode } from 'react'
+import { Language, LanguageCode, languages } from '../locales'
+import useAppSettings from './useAppSettings'
 
-export type LanguageContextValue = {
-  locale: AppLocale
-  t: Language
-  setLocale: (next: AppLocale) => void
+export type LanguageContextValue = Language
+
+export const LanguageContext = createContext<LanguageContextValue | undefined>(undefined)
+
+function detectPreferredLocale(): LanguageCode | undefined {
+  for (const language of navigator.languages) {
+    for (const supportedLanguage of Object.values(languages)) {
+      if (supportedLanguage.metadata.codes.includes(language)) {
+        return supportedLanguage.metadata.code as LanguageCode
+      }
+    }
+  }
 }
 
-export const LanguageContext = createContext<LanguageContextValue | null>(null)
+export function LanguageProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const { language: langSetting } = useAppSettings()
+  const language = useMemo(() => languages[langSetting.value], [langSetting.value])
 
-export type LanguageProviderProps = {
-  children: ReactNode
-  locale: AppLocale
-  t: Language
-  setLocale: (next: AppLocale) => void
-}
+  useEffect(
+    function updateLanguage() {
+      if (langSetting.value) return
+      const detected = detectPreferredLocale()
+      if (detected) langSetting.set(detected)
+    },
+    [langSetting]
+  )
 
-export function LanguageProvider({ children, locale, t, setLocale }: Readonly<LanguageProviderProps>) {
-  const context = useMemo(() => ({ locale, t, setLocale }), [locale, t, setLocale])
-  return <LanguageContext.Provider value={context}>{children}</LanguageContext.Provider>
+  useEffect(
+    function updateDocumentTitle() {
+      document.title = language.main.title
+    },
+    [language]
+  )
+
+  return <LanguageContext.Provider value={language}>{children}</LanguageContext.Provider>
 }

@@ -3,7 +3,8 @@ import type { Language } from './en'
 export const language: Language = {
   metadata: {
     name: 'Norsk',
-    code: 'no',
+    code: 'nb',
+    codes: ['no', 'nb', 'nn', 'nb-NO', 'nn-NO'],
     emoji: '🇳🇴',
   },
   main: {

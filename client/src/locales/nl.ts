@@ -4,6 +4,7 @@ export const language: Language = {
   metadata: {
     name: 'Nederlands',
     code: 'nl',
+    codes: ['nl', 'nl-NL'],
     emoji: '🇳🇱',
   },
   main: {
