@@ -271,30 +271,29 @@ export default function App() {
 
       <div className='queueFormContainer'>
         <form className='queueForm' onSubmit={handleQueueSubmit}>
-          <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
-            {Array.from({ length: 8 }, (_, i) => (
-              <option key={i + 1} value={String(i + 1)}>
-                {t.queueDisplay.hourEstimate(i + 1)}
-              </option>
-            ))}
-          </select>
-
           {(() => {
             const userEntry = queue.find(e => e.id === identity.userId)
-            if (userEntry) {
-              const buttonLabel = isCurrent(userEntry) ? t.queue.imDone : t.queue.leaveQueue
-              return (
-                <button className='button' type='button' onClick={() => displayExitModal(userEntry.id)}>
-                  {buttonLabel}
-                </button>
-              )
-            }
-
-            const buttonLabel = queue.length === 0 ? t.queue.takeOver : t.queue.joinQueue
             return (
-              <button className='button' type='submit'>
-                {buttonLabel}
-              </button>
+              <>
+                {!userEntry && (
+                  <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <option key={i + 1} value={String(i + 1)}>
+                        {t.queueDisplay.hourEstimate(i + 1)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {userEntry ? (
+                  <button className='button' type='button' onClick={() => displayExitModal(userEntry.id)}>
+                    {isCurrent(userEntry) ? t.queue.imDone : t.queue.leaveQueue}
+                  </button>
+                ) : (
+                  <button className='button' type='submit'>
+                    {queue.length === 0 ? t.queue.takeOver : t.queue.joinQueue}
+                  </button>
+                )}
+              </>
             )
           })()}
         </form>
