@@ -13,7 +13,7 @@ export type NavMenuProps = {
 export default function NavMenu({ isReversed, animationKeyCounter, handleClick }: Readonly<NavMenuProps>) {
   const t = useLanguage()
   const { identity, setName } = useIdentity()
-  const { language, audioMode, hideLog, godmodePw } = useAppSettings()
+  const { language, audioMode, hideLog, hideUptime, godmodePw } = useAppSettings()
 
   return (
     <div className='navmenuwrapper'>
@@ -66,6 +66,17 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick }
               className='check'
               checked={hideLog.value}
               onChange={e => hideLog.set(e.target.checked)}
+            />
+          </li>
+
+          <li className='rowInput'>
+            <label>{t.nav.hideUptime}</label>
+            <input
+              id='hideUptime'
+              type='checkbox'
+              className='check'
+              checked={hideUptime.value}
+              onChange={e => hideUptime.set(e.target.checked)}
             />
           </li>
 

@@ -5,9 +5,11 @@ import {
   addToQueue as apiAddToQueue,
   getSocket,
   getTabs as apiGetTabs,
+  getUptimeSummary as apiGetUptimeSummary,
   removeFromQueue as apiRemoveFromQueue,
   switchSocketTab,
   TabConfig,
+  UptimeSummary,
 } from './api/queueApi'
 import { playAudio } from './utils/audio'
 import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
@@ -17,6 +19,7 @@ import HistoryDisplay from './HistoryDisplay'
 import NavMenu from './NavMenu'
 import QueueDisplay from './QueueDisplay'
 import Spinner from './Spinner'
+import UptimeDisplay from './UptimeDisplay'
 import queueFreeSound from './audio/queue_free.mp3'
 import queueFreeSoundTob from './audio/queue_free_tob.mp3'
 import queueKickSound from './audio/queue_kick.mp3'
@@ -32,7 +35,7 @@ const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
 export default function App() {
   const { identity } = useIdentity()
-  const { audioMode, hideLog, godmodePw } = useAppSettings()
+  const { audioMode, hideLog, hideUptime, godmodePw } = useAppSettings()
   const t = useLanguage()
   const [tabs, setTabs] = useState<TabConfig[]>([])
   const [activeTab, setActiveTab] = useState<string>()
@@ -41,6 +44,7 @@ export default function App() {
   const [modalEntryId, setModalEntryId] = useState<string | null>(null)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
+  const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary | null>(null)
 
   const queue = data.filter(e => isPending(e))
 
@@ -93,6 +97,21 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    const loadUptime = async () => {
+      try {
+        const summary = await apiGetUptimeSummary()
+        setUptimeSummary(summary)
+      } catch (err) {
+        console.error('Failed to load uptime summary:', err)
+      }
+    }
+
+    void loadUptime()
+    const uptimeInterval = setInterval(() => void loadUptime(), 1000 * 60 * 5)
+    return () => clearInterval(uptimeInterval)
+  }, [])
+
+  useEffect(() => {
     if (!activeTab) return
     localStorage.setItem(LAST_ACTIVE_TAB_STORAGE_KEY, activeTab)
     const url = new URL(globalThis.location.href)
@@ -107,7 +126,6 @@ export default function App() {
     setDisplayModal(false)
     currentHolderRef.current = undefined
     const socket = getSocket()
-    switchSocketTab(activeTab)
 
     const userId = identity.userId || null
 
@@ -126,6 +144,8 @@ export default function App() {
     }
 
     socket.on('stateUpdate', handleStateUpdate)
+    switchSocketTab(activeTab)
+
     return () => {
       socket.off('stateUpdate', handleStateUpdate)
     }
@@ -290,6 +310,7 @@ export default function App() {
         )}
 
         {!hideLog.value && <HistoryDisplay data={data} />}
+        {!hideUptime.value && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
       </>
     </div>
   )

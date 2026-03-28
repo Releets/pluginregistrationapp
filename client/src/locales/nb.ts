@@ -14,6 +14,7 @@ export const language: Language = {
   nav: {
     yourName: 'Ditt navn',
     hideLog: 'Skjul logg',
+    hideUptime: 'Skjul oppetid',
     audioMode: 'Tobias-modus',
     godmodePw: 'Godmode-passord',
     language: 'Språk',

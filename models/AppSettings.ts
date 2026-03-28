@@ -12,6 +12,7 @@ export const defaultSettings = {
   audioMode: 'tobias' as AudioMode,
   godmodePw: '',
   hideLog: false as boolean,
+  hideUptime: true as boolean,
   language: languages.en.metadata.code as LanguageCode,
 }
 

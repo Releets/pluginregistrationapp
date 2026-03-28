@@ -1,4 +1,4 @@
-import { createContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useMemo, useState, type ReactNode } from 'react'
 import '../styles/App.css'
 import type { StoredIdentity } from '../../../models/AppSettings'
 import { registerIdentity } from '../api/queueApi'
@@ -52,13 +52,16 @@ export function IdentityProvider({ children }: Readonly<{ children: ReactNode }>
 
   const isLoggedIn = Boolean(identity.userId && identity.privateKey)
 
-  function setNameHandler(name: string): void {
+  const setName = useCallback((name: string) => {
     setNameInput(name)
-    setIdentity({ ...identity, name })
-    storeIdentity({ ...identity, name })
-  }
+    setIdentity(prev => {
+      const next = { ...prev, name }
+      storeIdentity(next)
+      return next
+    })
+  }, [])
 
-  const context = useMemo(() => ({ identity, setName: setNameHandler }), [identity.userId, identity.privateKey])
+  const context = useMemo(() => ({ identity, setName }), [identity, setName])
 
   async function loginHandler(name: string): Promise<void> {
     setIsLoggingIn(true)

@@ -12,6 +12,7 @@ export const language = {
   nav: {
     yourName: 'Your name',
     hideLog: 'Hide log',
+    hideUptime: 'Hide uptime',
     audioMode: 'Tobias mode',
     godmodePw: 'Godmode password',
     language: 'Language',
