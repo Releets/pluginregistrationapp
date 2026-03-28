@@ -4,6 +4,13 @@ body {
   margin: 0;
 }
 
+h1 {
+  color: white;
+  margin-top: 0.5em;
+  font-family: Lato, sans-serif;
+  font-size: 3vw;
+}
+
 .App {
   display: flex;
   flex-direction: column;
@@ -11,6 +18,14 @@ body {
   text-align: center;
   height: 100dvh;
   width: 100%;
+  align-items: center;
+}
+
+.content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
@@ -131,12 +146,6 @@ body {
   border-color: #126662;
 }
 
-.banner {
-  margin-top: 0.5em;
-  color: rgb(255, 255, 255);
-  font-family: Lato, sans-serif;
-  font-size: 3vw;
-}
 .spinner {
   size: 100px;
 }
