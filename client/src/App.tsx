@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
-import { AudioMode, defaultSettings, UserSettings } from '../../models/UserSettings'
+import { AudioMode, type UserSettings } from '../../models/UserSettings'
 import {
   addToQueue as apiAddToQueue,
   getSocket,
@@ -10,12 +10,11 @@ import {
   switchSocketTab,
   TabConfig,
 } from './api/queueApi'
-import { LanguageProvider } from './context/LanguageContext'
+import { useLanguage } from './context/useLanguage'
 import { languages } from './locales'
-import { detectPreferredLocale } from './utils/detectPreferredLocale'
 import { intlLocaleTag } from './utils/intlLocale'
 import { playAudio } from './utils/audio'
-import { loadUserSettingsFromStorage, saveUserSettingsToStorage } from './utils/settings'
+import { saveUserSettingsToStorage } from './utils/settings'
 import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
 import { type StoredIdentity, getStoredIdentity, getUserId, setStoredIdentity } from './utils/identity'
 import './styles/App.css'
@@ -34,13 +33,12 @@ import cross from './icons/cross.svg'
 let counter = 0
 const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
-function getInitialAppSettings(): UserSettings {
-  const stored = loadUserSettingsFromStorage()
-  if (stored) return stored
-  return { ...defaultSettings, language: detectPreferredLocale() }
+export type AppProps = {
+  appSettings: UserSettings
+  setAppSettings: Dispatch<SetStateAction<UserSettings>>
 }
 
-export default function App() {
+export default function App({ appSettings, setAppSettings }: Readonly<AppProps>) {
   const [tabs, setTabs] = useState<TabConfig[]>([])
   const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -48,7 +46,6 @@ export default function App() {
   const [modalEntryId, setModalEntryId] = useState<string | null>(null)
   const [displaySpinner, setDisplaySpinner] = useState(true)
   const [isReversed, setIsReversed] = useState(true)
-  const [appSettings, setAppSettings] = useState<UserSettings>(getInitialAppSettings)
   const [identity, setIdentity] = useState<StoredIdentity | null>(() => getStoredIdentity())
   const [loginName, setLoginName] = useState<string>(() => getStoredIdentity()?.name ?? '')
   const [loginError, setLoginError] = useState<string | null>(null)
@@ -72,7 +69,7 @@ export default function App() {
   soundsRef.current = sounds
   appSettingsRef.current = appSettings
 
-  const t = languages[appSettings.language]
+  const { t } = useLanguage()
 
   useEffect(() => {
     appSettingsRef.current = appSettings
@@ -227,15 +224,16 @@ export default function App() {
   }
 
   const setOptions = (key: keyof UserSettings, value: UserSettings[typeof key]) => {
-    const newSettings = { ...appSettings, [key]: value }
-    saveUserSettingsToStorage(newSettings)
-    setAppSettings(newSettings)
-    console.debug('Updated settings:', newSettings)
+    setAppSettings(prev => {
+      const newSettings = { ...prev, [key]: value }
+      saveUserSettingsToStorage(newSettings)
+      console.debug('Updated settings:', newSettings)
+      return newSettings
+    })
   }
 
   return (
-    <LanguageProvider locale={appSettings.language} t={t} setLocale={next => setOptions('language', next)}>
-      <div className='App'>
+    <div className='App'>
         <NavMenu
           isReversed={isReversed}
           animationKeyCounter={counter}
@@ -369,6 +367,5 @@ export default function App() {
           </div>
         )}
       </div>
-    </LanguageProvider>
   )
 }
