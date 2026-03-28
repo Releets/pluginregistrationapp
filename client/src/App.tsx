@@ -251,20 +251,17 @@ export default function App() {
           <Spinner />
         ) : (
           <>
-            <div className='availabilityIcon'>
-              <img
-                className='icon'
-                src={queue.length === 0 ? check : cross}
-                alt={queue.length === 0 ? t.availability.available : t.availability.unavailable}
-              ></img>
-            </div>
+            <img
+              className='icon'
+              src={queue.length === 0 ? check : cross}
+              alt={queue.length === 0 ? t.availability.available : t.availability.unavailable}
+            />
 
             {queue.length > 0 && (
               <div className='queueContainer'>
                 <QueueDisplay items={queue} leaveQueueFunction={displayExitModal} />
               </div>
             )}
-            <div style={{ height: '100%' }} />
           </>
         )}
       </div>
