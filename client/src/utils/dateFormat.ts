@@ -3,8 +3,7 @@
  * Backend sends/stores all dates as UTC; these helpers display in user TZ.
  */
 
-import type { AppLocale } from '../../../models/UserSettings'
-import { intlLocaleTag } from './intlLocale'
+import { intlLocaleTag, type LanguageCode } from '../locales'
 
 const timeFormatters = new Map<string, Intl.DateTimeFormat>()
 const datePartFormatters = new Map<string, Intl.DateTimeFormat>()
@@ -30,7 +29,7 @@ function datePartFormatterFor(intlLocale: string): Intl.DateTimeFormat {
 /**
  * Format time only (e.g. "14:30") in client timezone for the given app locale.
  */
-export function formatTime(utcMs: number, locale: AppLocale): string {
+export function formatTime(utcMs: number, locale: LanguageCode): string {
   const tag = intlLocaleTag(locale)
   return timeFormatterFor(tag).format(new Date(utcMs))
 }
@@ -38,7 +37,7 @@ export function formatTime(utcMs: number, locale: AppLocale): string {
 /**
  * Format date and time in client timezone for the given app locale.
  */
-export function formatDateTime(utcMs: number, locale: AppLocale): string {
+export function formatDateTime(utcMs: number, locale: LanguageCode): string {
   const tag = intlLocaleTag(locale)
   const d = new Date(utcMs)
   const datePart = datePartFormatterFor(tag).format(d)

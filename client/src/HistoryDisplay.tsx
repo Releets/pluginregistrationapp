@@ -1,8 +1,9 @@
 import './styles/HistoryDisplay.css'
-import type { AppLocale } from '../../models/UserSettings'
 import { isExited, QueueEntry, QueueEntryExited } from '../../models/QueueEntry'
-import { useLanguage } from './context/useLanguage'
+import useAppSettings from './context/useAppSettings'
+import type { LanguageCode } from './locales'
 import { formatDateTime } from './utils/dateFormat'
+import useLanguage from './context/useLanguage'
 
 export type HistoryDisplayProps = {
   data: QueueEntry[]
@@ -10,7 +11,9 @@ export type HistoryDisplayProps = {
 
 export default function HistoryDisplay(props: Readonly<HistoryDisplayProps>) {
   const { data } = props
-  const { locale, t } = useLanguage()
+  const t = useLanguage()
+  const { language } = useAppSettings()
+  const locale = language.value
 
   const historyQueue = data
     .filter(e => isExited(e))
@@ -33,7 +36,7 @@ export default function HistoryDisplay(props: Readonly<HistoryDisplayProps>) {
 
 type HistoryEntryProps = {
   item: QueueEntryExited
-  locale: AppLocale
+  locale: LanguageCode
 }
 
 function HistoryEntry(props: Readonly<HistoryEntryProps>) {

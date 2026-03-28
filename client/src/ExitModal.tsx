@@ -1,5 +1,5 @@
+import useLanguage from './context/useLanguage'
 import './styles/ExitModal.css'
-import { useLanguage } from './context/useLanguage'
 
 export type ExitModalProps = {
   displayItem: string
@@ -7,7 +7,7 @@ export type ExitModalProps = {
 }
 
 export default function ExitModal({ displayItem, closeModalFunction }: ExitModalProps) {
-  const { t } = useLanguage()
+  const t = useLanguage()
   return (
     <div className='screenBlur'>
       <div className='modalContainer'>

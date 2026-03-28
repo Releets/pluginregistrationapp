@@ -1,24 +1,26 @@
 import './styles/QueueDisplay.css'
-import type { AppLocale } from '../../models/UserSettings'
 import type { QueueEntry } from '../../models/QueueEntry'
-import { useLanguage } from './context/useLanguage'
+import useAppSettings from './context/useAppSettings'
+import useLanguage from './context/useLanguage'
+import { intlLocaleTag, type LanguageCode } from './locales'
 import { formatTime } from './utils/dateFormat'
 import { formatHourEstimate } from './utils/hourEstimate'
-import { intlLocaleTag } from './utils/intlLocale'
 
 export type QueueDisplayProps = {
   items: QueueEntry[]
   leaveQueueFunction: (id: string) => void
 }
 
-function formattedFinishTime(entry: QueueEntry, locale: AppLocale): string {
+function formattedFinishTime(entry: QueueEntry, locale: LanguageCode): string {
   const entered = entry.entered ?? 0
   const finishUtcMs = entered + entry.estimated * 60 * 60 * 1000
   return formatTime(finishUtcMs, locale)
 }
 
 export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<QueueDisplayProps>) {
-  const { locale, t } = useLanguage()
+  const t = useLanguage()
+  const { language } = useAppSettings()
+  const locale = language.value
   const intlTag = intlLocaleTag(locale)
 
   return (

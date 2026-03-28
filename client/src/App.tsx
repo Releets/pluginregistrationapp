@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { AudioMode } from '../../models/UserSettings'
+import type { LanguageCode } from './locales'
 import {
   addToQueue as apiAddToQueue,
   getSocket,
@@ -26,13 +27,21 @@ import queueKickSound from './audio/queue_kick.mp3'
 import queueKickSoundTob from './audio/queue_kick_tob.mp3'
 import check from './icons/check.svg'
 import cross from './icons/cross.svg'
+import useAppSettings from './context/useAppSettings'
 import useLanguage from './context/useLanguage'
 
 let counter = 0
 const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
+type SettingsSnapshot = {
+  language: LanguageCode
+  audioMode: AudioMode
+  godmodePassword: string
+}
+
 export default function App() {
-  const language = useLanguage()
+  const t = useLanguage()
+  const settings = useAppSettings()
   const [tabs, setTabs] = useState<TabConfig[]>([])
   const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -57,15 +66,20 @@ export default function App() {
     },
   }
 
-  const appSettingsRef = useRef(appSettings)
+  const appSettingsRef = useRef<SettingsSnapshot>({
+    language: settings.language.value,
+    audioMode: settings.audioMode.value,
+    godmodePassword: settings.godmodePassword.value,
+  })
+  appSettingsRef.current = {
+    language: settings.language.value,
+    audioMode: settings.audioMode.value,
+    godmodePassword: settings.godmodePassword.value,
+  }
+
   const currentHolderRef = useRef<QueueEntryCurrent | undefined>(undefined)
   const soundsRef = useRef(sounds)
   soundsRef.current = sounds
-  appSettingsRef.current = appSettings
-
-  useEffect(() => {
-    appSettingsRef.current = appSettings
-  }, [appSettings])
 
   useEffect(() => {
     const loadTabs = async () => {
@@ -300,7 +314,7 @@ export default function App() {
             />
           )}
 
-          {!appSettings['hideLog'] && <HistoryDisplay data={data} />}
+          {!settings.hideLog.value && <HistoryDisplay data={data} />}
         </>
       ) : (
         <div className='loginPrompt'>
