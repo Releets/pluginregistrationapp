@@ -34,8 +34,8 @@
   animation: hoverUpDown 2s ease-in-out infinite;
 }
 .queEnd {
-  width: 7vw;
-  height: 7vw;
+  width: 5rem;
+  height: 5rem;
 }
 
 .entryTimeContainer {
