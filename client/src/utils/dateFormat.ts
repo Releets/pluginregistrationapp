@@ -3,28 +3,45 @@
  * Backend sends/stores all dates as UTC; these helpers display in user TZ.
  */
 
-/**
- * Format time only (e.g. "14:30") in client timezone.
- */
-export function formatTime(utcMs: number): string {
-  return new Date(utcMs).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+import type { AppLocale } from '../../../models/UserSettings'
+import { intlLocaleTag } from './intlLocale'
+
+const timeFormatters = new Map<string, Intl.DateTimeFormat>()
+const datePartFormatters = new Map<string, Intl.DateTimeFormat>()
+
+function timeFormatterFor(intlLocale: string): Intl.DateTimeFormat {
+  let f = timeFormatters.get(intlLocale)
+  if (!f) {
+    f = new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit' })
+    timeFormatters.set(intlLocale, f)
+  }
+  return f
+}
+
+function datePartFormatterFor(intlLocale: string): Intl.DateTimeFormat {
+  let f = datePartFormatters.get(intlLocale)
+  if (!f) {
+    f = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' })
+    datePartFormatters.set(intlLocale, f)
+  }
+  return f
 }
 
 /**
- * Format date and time (e.g. "17. mar | 14:30") in client timezone.
+ * Format time only (e.g. "14:30") in client timezone for the given app locale.
  */
-export function formatDateTime(utcMs: number): string {
-  const date = new Date(utcMs)
-  const datePart = date.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-  })
-  const timePart = date.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+export function formatTime(utcMs: number, locale: AppLocale): string {
+  const tag = intlLocaleTag(locale)
+  return timeFormatterFor(tag).format(new Date(utcMs))
+}
+
+/**
+ * Format date and time in client timezone for the given app locale.
+ */
+export function formatDateTime(utcMs: number, locale: AppLocale): string {
+  const tag = intlLocaleTag(locale)
+  const d = new Date(utcMs)
+  const datePart = datePartFormatterFor(tag).format(d)
+  const timePart = timeFormatterFor(tag).format(d)
   return `${datePart} | ${timePart}`
 }

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import './styles/NavMenu.css'
-import type { UserSettings } from '../../models/UserSettings'
+import type { AppLocale, UserSettings } from '../../models/UserSettings'
+import { useLanguage } from './context/useLanguage'
 import { loadUserSettingsFromStorage } from './utils/settings'
 import type { StoredIdentity } from './utils/identity'
 import { setStoredIdentity } from './utils/identity'
+
+const APP_LOCALES: AppLocale[] = ['en', 'no', 'nl']
 
 export type NavMenuProps = {
   isReversed: boolean
@@ -24,6 +27,7 @@ export default function NavMenu({
   identity,
   onIdentityChange,
 }: NavMenuProps) {
+  const { t } = useLanguage()
   const godmodePasswordRef = useRef<HTMLInputElement>(null)
   const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
 
@@ -50,7 +54,7 @@ export default function NavMenu({
           {identity && (
             <li>
               <div className='nameContainer'>
-                <label>Ditt navn</label>
+                <label>{t.nav.yourName}</label>
                 <input
                   className='nameField'
                   type='text'
@@ -73,6 +77,23 @@ export default function NavMenu({
             </li>
           )}
           <li>
+            <div className='nameContainer'>
+              <label htmlFor='app-language-select'>{t.nav.language}</label>
+              <select
+                id='app-language-select'
+                className='nameField'
+                value={userAppSettings.language}
+                onChange={e => handleOption('language', e.target.value as AppLocale)}
+              >
+                {APP_LOCALES.map(code => (
+                  <option key={code} value={code}>
+                    {t.languages[code]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </li>
+          <li>
             <div className='checkbox-wrapper'>
               <input
                 type='checkbox'
@@ -80,7 +101,7 @@ export default function NavMenu({
                 checked={userAppSettings.hideLog}
                 onChange={e => handleOption('hideLog', e.target.checked)}
               />
-              <label>Hide Log</label>
+              <label>{t.nav.hideLog}</label>
             </div>
           </li>
           <li>
@@ -91,7 +112,7 @@ export default function NavMenu({
                 checked={userAppSettings.audioMode === 'tobias'}
                 onChange={e => handleOption('audioMode', e.target.checked ? 'tobias' : 'normal')}
               />
-              <label>Tobias Mode</label>
+              <label>{t.nav.tobiasMode}</label>
             </div>
           </li>
           <li>
@@ -100,21 +121,21 @@ export default function NavMenu({
                 className='passwordField'
                 ref={godmodePasswordRef}
                 type='password'
-                placeholder='Godmode password'
+                placeholder={t.nav.godmodePassword}
                 onChange={e => handleOption('godmodePassword', e.target.value)}
               />
             </div>
           </li>
         </ul>
         <div className='menuFooter'>
-          <p>Want to report a bug or suggest a feature?</p>
+          <p>{t.nav.reportPrompt}</p>
           <a
             className='githubIssueButton'
             href='https://github.com/Releets/pluginregistrationapp/issues/new'
             target='_blank'
             rel='noreferrer'
           >
-            Create an issue here
+            {t.nav.createIssue}
           </a>
         </div>
       </div>
