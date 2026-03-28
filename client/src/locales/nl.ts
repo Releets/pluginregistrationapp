@@ -54,6 +54,7 @@ export const language: Language = {
     title: 'Inloggen',
     namePlaceholder: 'Je naam',
     submit: 'Inloggen',
+    loggingIn: 'Inloggen...',
   },
   alerts: {
     tabsLoadFailed: 'Kan tabbladen niet van de server laden',

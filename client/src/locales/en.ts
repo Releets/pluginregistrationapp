@@ -52,6 +52,7 @@ export const language = {
     title: 'Log in',
     namePlaceholder: 'Your name',
     submit: 'Log in',
+    loggingIn: 'Logging in...',
   },
   alerts: {
     tabsLoadFailed: 'Could not load tabs from the server',

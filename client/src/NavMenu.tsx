@@ -1,33 +1,25 @@
 import { useEffect, useState } from 'react'
 import './styles/NavMenu.css'
 import useAppSettings from './context/useAppSettings'
+import useIdentity from './context/useIdentity'
 import { languages, type LanguageCode } from './locales'
-import type { StoredIdentity } from './utils/identity'
-import { setStoredIdentity } from './utils/identity'
 import useLanguage from './context/useLanguage'
 
 export type NavMenuProps = {
   isReversed: boolean
   animationKeyCounter: number
   handleClick: () => void
-  identity: StoredIdentity | null
-  onIdentityChange: (next: StoredIdentity) => void
 }
 
-export default function NavMenu({
-  isReversed,
-  animationKeyCounter,
-  handleClick,
-  identity,
-  onIdentityChange,
-}: Readonly<NavMenuProps>) {
+export default function NavMenu({ isReversed, animationKeyCounter, handleClick }: Readonly<NavMenuProps>) {
   const t = useLanguage()
-  const { username, language, audioMode, hideLog, godmodePw } = useAppSettings()
-  const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
+  const { identity, setName } = useIdentity()
+  const { language, audioMode, hideLog, godmodePw } = useAppSettings()
+  const [nameDraft, setNameDraft] = useState(identity.name)
 
   useEffect(() => {
-    setNameDraft(identity?.name ?? '')
-  }, [identity?.name])
+    setNameDraft(identity.name)
+  }, [identity.name])
 
   return (
     <div className='navmenuwrapper'>
@@ -38,49 +30,34 @@ export default function NavMenu({
       </div>
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
-          {identity && (
-            <li>
-              <div className='nameContainer'>
-                <label>{t.nav.yourName}</label>
-                <input
-                  className='nameField'
-                  type='text'
-                  value={nameDraft}
-                  maxLength={50}
-                  onChange={e => setNameDraft(e.target.value)}
-                  onBlur={() => {
-                    const newName = nameDraft.trim()
-                    if (!newName || newName === identity.name) return
-                    const next = { ...identity, name: newName }
-                    setStoredIdentity(next)
-                    onIdentityChange(next)
-                  }}
-                  onKeyDown={e => {
-                    if (e.key !== 'Enter') return
-                    e.currentTarget.blur()
-                  }}
-                />
-              </div>
-            </li>
-          )}
-
-          <li className='columnInput'>
-            <label>{t.nav.username}</label>
-            <input
-              id='username'
-              type='text'
-              placeholder={t.nav.username}
-              value={username.value}
-              onChange={e => username.set(e.target.value)}
-            />
+          <li>
+            <div className='nameContainer'>
+              <label>{t.nav.yourName}</label>
+              <input
+                className='nameField'
+                type='text'
+                value={nameDraft}
+                maxLength={50}
+                onChange={e => setNameDraft(e.target.value)}
+                onBlur={() => {
+                  const newName = nameDraft.trim()
+                  if (!newName || newName === identity.name) return
+                  setName(newName)
+                }}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter') return
+                  e.currentTarget.blur()
+                }}
+              />
+            </div>
           </li>
 
           <li className='columnInput'>
             <label>{t.nav.language}</label>
             <select id='language' value={language.value} onChange={e => language.set(e.target.value as LanguageCode)}>
-              {Object.values(languages).map(language => (
-                <option key={language.metadata.code} value={language.metadata.code}>
-                  {language.metadata.emoji} {language.metadata.name}
+              {Object.values(languages).map(lang => (
+                <option key={lang.metadata.code} value={lang.metadata.code}>
+                  {lang.metadata.emoji} {lang.metadata.name}
                 </option>
               ))}
             </select>

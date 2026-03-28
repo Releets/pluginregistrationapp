@@ -54,6 +54,7 @@ export const language: Language = {
     title: 'Logg inn',
     namePlaceholder: 'Ditt navn',
     submit: 'Logg inn',
+    loggingIn: 'Logger inn...',
   },
   alerts: {
     tabsLoadFailed: 'Kunne ikke hente faner fra serveren',

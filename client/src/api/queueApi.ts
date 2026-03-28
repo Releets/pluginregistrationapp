@@ -57,7 +57,12 @@ export async function addToQueue(queueEntry: QueueEntry, tab: string): Promise<v
   } catch (e) {
     console.warn(timestamp(), e)
     const message =
-      e && typeof e === 'object' && 'response' in e && e.response && typeof e.response === 'object' && 'data' in e.response
+      e &&
+      typeof e === 'object' &&
+      'response' in e &&
+      e.response &&
+      typeof e.response === 'object' &&
+      'data' in e.response
         ? String((e.response as { data: unknown }).data)
         : 'Request failed'
     throw new Error(message)
@@ -70,7 +75,8 @@ export async function registerIdentity(): Promise<{ userId: string; privateKey: 
   try {
     const res = await axios.post(adr + '/register')
     const { userId, privateKey } = res.data as { userId: string; privateKey: string }
-    if (typeof userId !== 'string' || typeof privateKey !== 'string') throw new Error('Invalid register response')
+    if (typeof userId !== 'string' || typeof privateKey !== 'string')
+      throw new Error('Invalid register response: ' + JSON.stringify(res.data, null, 2))
     return { userId, privateKey }
   } catch (e) {
     console.warn(timestamp(), e)
@@ -81,8 +87,8 @@ export async function registerIdentity(): Promise<{ userId: string; privateKey: 
 export async function removeFromQueue(
   user: QueueEntry,
   privateKey: string,
-  godmodePassword: string,
-  tab: string
+  tab: string,
+  godmodePassword?: string
 ): Promise<void> {
   ensureAxiosBaseUrl()
   const adr = getBackendUrl()
