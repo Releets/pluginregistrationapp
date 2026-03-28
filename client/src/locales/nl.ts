@@ -9,7 +9,7 @@ export const language: Language = {
     yourName: 'Je naam',
     hideLog: 'Log verbergen',
     tobiasMode: 'Tobias-modus',
-    godmodePassword: 'Godmode-wachtwoord',
+    godmode: 'Godmode-wachtwoord',
     language: 'Taal',
     reportPrompt: 'Wil je een bug melden of een suggestie doen?',
     createIssue: 'Maak hier een issue aan',

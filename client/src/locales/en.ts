@@ -7,7 +7,7 @@ export const language = {
     yourName: 'Your name',
     hideLog: 'Hide log',
     tobiasMode: 'Tobias mode',
-    godmodePassword: 'Godmode password',
+    godmode: 'Godmode password',
     language: 'Language',
     reportPrompt: 'Want to report a bug or suggest a feature?',
     createIssue: 'Create an issue here',
