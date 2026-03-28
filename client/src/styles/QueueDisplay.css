@@ -1,7 +1,7 @@
 .userBox {
   background-color: rgb(14, 117, 100);
-  width: 7vw;
-  height: 7vw;
+  width: 5rem;
+  height: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,14 +11,16 @@
   border-radius: 50%;
   box-sizing: border-box;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  font-size: 1vw;
+  font-size: 12px;
   font-family: Lato, sans-serif;
 }
+
 .userBox:hover {
   background-color: rgba(255, 0, 0, 0.3);
   border: 5px solid rgba(255, 0, 0, 0.6);
   cursor: pointer;
 }
+
 .queue {
   display: inline-flex;
   justify-content: center;
