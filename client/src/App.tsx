@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { isCurrent, isPending, QueueEntry, QueueEntryCurrent } from '../../models/QueueEntry'
 import { AudioMode } from '../../models/UserSettings'
-import type { LanguageCode } from './locales'
 import {
   addToQueue as apiAddToQueue,
   getSocket,
@@ -33,12 +32,6 @@ import useLanguage from './context/useLanguage'
 let counter = 0
 const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
-type SettingsSnapshot = {
-  language: LanguageCode
-  audioMode: AudioMode
-  godmodePassword: string
-}
-
 export default function App() {
   const t = useLanguage()
   const settings = useAppSettings()
@@ -64,17 +57,6 @@ export default function App() {
       free: new Audio(queueFreeSoundTob),
       kick: new Audio(queueKickSoundTob),
     },
-  }
-
-  const appSettingsRef = useRef<SettingsSnapshot>({
-    language: settings.language.value,
-    audioMode: settings.audioMode.value,
-    godmodePassword: settings.godmodePassword.value,
-  })
-  appSettingsRef.current = {
-    language: settings.language.value,
-    audioMode: settings.audioMode.value,
-    godmodePassword: settings.godmodePassword.value,
   }
 
   const currentHolderRef = useRef<QueueEntryCurrent | undefined>(undefined)
@@ -105,12 +87,12 @@ export default function App() {
       } catch (err) {
         console.error('Failed to load tabs:', err)
         setDisplaySpinner(false)
-        alert(languages[appSettingsRef.current.language].alerts.tabsLoadFailed)
+        alert(languages[settings.language.value].alerts.tabsLoadFailed)
       }
     }
 
     loadTabs()
-  }, [])
+  }, [settings.language.value])
 
   useEffect(() => {
     if (!activeTab) return
@@ -128,13 +110,14 @@ export default function App() {
     currentHolderRef.current = undefined
     const socket = getSocket()
     switchSocketTab(activeTab)
+    const audioMode = settings.audioMode.value
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, getUserId())
       if (soundToPlay === 'kick') {
-        playAudio(soundsRef.current[appSettingsRef.current.audioMode].kick)
+        playAudio(soundsRef.current[audioMode].kick)
       } else if (soundToPlay === 'free') {
-        playAudio(soundsRef.current[appSettingsRef.current.audioMode].free)
+        playAudio(soundsRef.current[audioMode].free)
       }
       currentHolderRef.current = newHolder
       setData(newState)
@@ -145,17 +128,17 @@ export default function App() {
     return () => {
       socket.off('stateUpdate', handleStateUpdate)
     }
-  }, [activeTab])
+  }, [activeTab, settings.audioMode.value])
 
   const addToQueue = (queueEntry: QueueEntry) => {
     if (!activeTab) return
     void apiAddToQueue(queueEntry, activeTab).catch(() => {
-      alert(languages[appSettingsRef.current.language].alerts.addToQueueFailed)
+      alert(languages[settings.language.value].alerts.addToQueueFailed)
     })
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
-    const messages = languages[appSettingsRef.current.language]
+    const messages = languages[settings.language.value]
     if (!activeTab) throw new Error(messages.errors.activeTabRequired)
     currentHolderRef.current = undefined
     if (!identity?.privateKey) throw new Error(messages.errors.mustBeLoggedInToLeave)
@@ -164,7 +147,7 @@ export default function App() {
     const privateKeyToSubmit = user.id === legacyPrivateKey ? legacyPrivateKey : identity.privateKey
     if (!privateKeyToSubmit) throw new Error(messages.errors.missingPrivateKey)
 
-    await apiRemoveFromQueue(user, privateKeyToSubmit, appSettingsRef.current.godmodePassword, activeTab)
+    await apiRemoveFromQueue(user, privateKeyToSubmit, settings.godmodePassword.value, activeTab)
   }
 
   const timeInputRef = useRef<HTMLSelectElement>(null)
@@ -189,7 +172,7 @@ export default function App() {
     if (userDidConfirm && activeModalEntry) {
       void removeFromQueue(activeModalEntry).catch(err => {
         const message = err instanceof Error ? err.message : ''
-        const lang = languages[appSettingsRef.current.language]
+        const lang = languages[settings.language.value]
         alert(message || lang.alerts.removeFromQueueFailed)
         console.error(message, err)
       })
