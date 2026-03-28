@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './styles/NavMenu.css'
 import useAppSettings from './context/useAppSettings'
 import type { LanguageCode } from './locales'
@@ -26,18 +26,11 @@ export default function NavMenu({
 }: Readonly<NavMenuProps>) {
   const t = useLanguage()
   const settings = useAppSettings()
-  const godmodePasswordRef = useRef<HTMLInputElement>(null)
   const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
 
   useEffect(() => {
     setNameDraft(identity?.name ?? '')
   }, [identity?.name])
-
-  useEffect(() => {
-    if (settings.godmodePassword.value != null && godmodePasswordRef.current) {
-      godmodePasswordRef.current.value = settings.godmodePassword.value
-    }
-  }, [settings.godmodePassword.value])
 
   return (
     <div className='navmenuwrapper'>
@@ -119,9 +112,9 @@ export default function NavMenu({
             <div className='passwordContainer'>
               <input
                 className='passwordField'
-                ref={godmodePasswordRef}
                 type='password'
                 placeholder={t.nav.godmode}
+                value={settings.godmodePassword.value}
                 onChange={e => settings.godmodePassword.set(e.target.value)}
               />
             </div>
