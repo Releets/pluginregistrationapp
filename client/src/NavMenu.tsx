@@ -121,7 +121,7 @@ export default function NavMenu({
                 className='passwordField'
                 ref={godmodePasswordRef}
                 type='password'
-                placeholder={t.nav.godmodePassword}
+                placeholder={t.nav.godmode}
                 onChange={e => handleOption('godmodePassword', e.target.value)}
               />
             </div>
