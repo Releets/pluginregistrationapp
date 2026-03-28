@@ -28,7 +28,6 @@ export const language: Language = {
     unavailable: 'Opptatt',
   },
   queue: {
-    durationOptions: ['1 time', '2 timer', '3 timer', '4 timer', '5 timer', '6 timer', '7 timer', '8 timer'],
     takeOver: 'Overta',
     joinQueue: 'Gå i kø',
     imDone: 'Jeg er ferdig',
@@ -37,10 +36,7 @@ export const language: Language = {
   queueDisplay: {
     bookedUntil: 'Booket til',
     estimated: 'Estimert',
-    hourEstimate: {
-      one: '{{n}} time',
-      other: '{{n}} timer',
-    },
+    hourEstimate: (n: number) => `${n} time${n === 1 ? '' : 'r'}`,
   },
   exitModal: {
     line1: 'Er du sikker på at du vil trekke',

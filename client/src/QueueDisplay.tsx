@@ -3,7 +3,6 @@ import type { QueueEntry } from '../../models/QueueEntry'
 import useAppSettings from './context/useAppSettings'
 import { type LanguageCode } from './locales'
 import { formatTime } from './utils/dateFormat'
-import { formatHourEstimate } from './utils/hourEstimate'
 import useLanguage from './context/useLanguage'
 
 export type QueueDisplayProps = {
@@ -38,7 +37,7 @@ export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<Que
             ) : (
               <>
                 <div className='entryTimeContainer'>{t.queueDisplay.estimated}</div>
-                <div className='entryTimeContainer'>{formatHourEstimate(item.estimated, language.value, t)}</div>
+                <div className='entryTimeContainer'>{t.queueDisplay.hourEstimate(item.estimated)}</div>
               </>
             )}
           </div>

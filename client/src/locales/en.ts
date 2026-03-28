@@ -26,7 +26,6 @@ export const language = {
     unavailable: 'Unavailable',
   },
   queue: {
-    durationOptions: ['1 hour', '2 hours', '3 hours', '4 hours', '5 hours', '6 hours', '7 hours', '8 hours'],
     takeOver: 'Take over',
     joinQueue: 'Join queue',
     imDone: "I'm done",
@@ -35,10 +34,7 @@ export const language = {
   queueDisplay: {
     bookedUntil: 'Booked until',
     estimated: 'Estimated',
-    hourEstimate: {
-      one: '{{n}} hour',
-      other: '{{n}} hours',
-    },
+    hourEstimate: (n: number) => `${n} hour${n === 1 ? '' : 's'}`,
   },
   exitModal: {
     line1: 'Are you sure you want to remove',

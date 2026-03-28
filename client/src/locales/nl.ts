@@ -28,7 +28,6 @@ export const language: Language = {
     unavailable: 'Niet beschikbaar',
   },
   queue: {
-    durationOptions: ['1 uur', '2 uur', '3 uur', '4 uur', '5 uur', '6 uur', '7 uur', '8 uur'],
     takeOver: 'Overnemen',
     joinQueue: 'In de wachtrij',
     imDone: 'Ik ben klaar',
@@ -37,10 +36,7 @@ export const language: Language = {
   queueDisplay: {
     bookedUntil: 'Geboekt tot',
     estimated: 'Geschat',
-    hourEstimate: {
-      one: '{{n}} uur',
-      other: '{{n}} uur',
-    },
+    hourEstimate: (n: number) => `${n} uur${n === 1 ? '' : 'en'}`,
   },
   exitModal: {
     line1: 'Weet je zeker dat je',

@@ -272,9 +272,9 @@ export default function App() {
       <div className='content'>
         <form className='queueForm' onSubmit={handleQueueSubmit}>
           <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
-            {t.queue.durationOptions.map((label, i) => (
+            {Array.from({ length: 8 }, (_, i) => (
               <option key={i + 1} value={String(i + 1)}>
-                {label}
+                {t.queueDisplay.hourEstimate(i + 1)}
               </option>
             ))}
           </select>
