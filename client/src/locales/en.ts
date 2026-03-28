@@ -65,7 +65,6 @@ export const language = {
     loginFailed: 'Could not log in',
     activeTabRequired: 'No active tab to remove you from the queue',
     mustBeLoggedInToLeave: 'You must be logged in to leave the queue',
-    missingPrivateKey: 'Missing private key to leave the queue',
   },
 }
 

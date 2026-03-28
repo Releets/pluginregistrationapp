@@ -163,11 +163,7 @@ export default function App() {
     currentHolderRef.current = undefined
     if (!identity.privateKey) throw new Error(t.errors.mustBeLoggedInToLeave)
 
-    const legacyPrivateKey = localStorage.getItem('privateKey')
-    const privateKeyToSubmit = user.id === legacyPrivateKey ? legacyPrivateKey : identity.privateKey
-    if (!privateKeyToSubmit) throw new Error(t.errors.missingPrivateKey)
-
-    await apiRemoveFromQueue(user, privateKeyToSubmit, activeTab, godmodePw.value || undefined)
+    await apiRemoveFromQueue(user, identity.privateKey, activeTab, godmodePw.value || undefined)
   }
 
   const timeInputRef = useRef<HTMLSelectElement>(null)
@@ -208,11 +204,7 @@ export default function App() {
     if (!activeTab) return
     if (!timeInput) return
 
-    const legacyPrivateKey = localStorage.getItem('privateKey')
-    const alreadyInQueue =
-      queue.some(e => e.id === identity.userId) ||
-      (legacyPrivateKey ? queue.some(e => e.id === legacyPrivateKey) : false)
-    if (alreadyInQueue) return
+    if (queue.some(e => e.id === identity.userId)) return
 
     addToQueue({
       id: identity.userId,
@@ -290,10 +282,7 @@ export default function App() {
           </div>
 
           {(() => {
-            const legacyPrivateKey = localStorage.getItem('privateKey')
-            const userEntry = queue.find(
-              e => e.id === identity.userId || (legacyPrivateKey ? e.id === legacyPrivateKey : false)
-            )
+            const userEntry = queue.find(e => e.id === identity.userId)
             if (userEntry) {
               const buttonLabel = isCurrent(userEntry) ? t.queue.imDone : t.queue.leaveQueue
               return (

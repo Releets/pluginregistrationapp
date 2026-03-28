@@ -67,6 +67,5 @@ export const language: Language = {
     loginFailed: 'Kunne ikke logge inn',
     activeTabRequired: 'Mangler aktiv fane for å fjerne deg fra køen',
     mustBeLoggedInToLeave: 'Du må være logget inn for å forlate køen',
-    missingPrivateKey: 'Mangler privatnøkkel for fjerning av køplass',
   },
 }

@@ -67,6 +67,5 @@ export const language: Language = {
     loginFailed: 'Inloggen mislukt',
     activeTabRequired: 'Geen actief tabblad om je uit de wachtrij te halen',
     mustBeLoggedInToLeave: 'Je moet ingelogd zijn om de wachtrij te verlaten',
-    missingPrivateKey: 'Privésleutel ontbreekt om de wachtrij te verlaten',
   },
 }

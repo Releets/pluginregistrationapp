@@ -58,13 +58,8 @@ export function exitQueue(tabId: string, toRemove: QueueEntry, privateKey: strin
   if (!force) {
     if (!privateKey) throw new Error('Du kan bare slette deg selv fra køen')
     const authStore = loadAuth()
-    const hasStoredAuth = item.id in authStore
-    if (hasStoredAuth) {
-      if (authStore[item.id] !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
-    } else {
-      // Legacy: entries created before auth store (id was the privateKey)
-      if (item.id !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
-    }
+    if (!(item.id in authStore)) throw new Error('Du kan bare slette deg selv fra køen')
+    if (authStore[item.id] !== privateKey) throw new Error('Du kan bare slette deg selv fra køen')
   }
 
   // Set the exit time of the entry
