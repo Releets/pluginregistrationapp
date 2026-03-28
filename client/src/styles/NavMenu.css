@@ -6,7 +6,7 @@
   top: 0;
   right: 0;
   width: 15em;
-  height: 50dvh;
+  height: 80dvh;
   z-index: 2;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -70,6 +70,7 @@
   color: #ccf9c3;
   display: block;
   text-align: left;
+  width: 100%;
 }
 
 .options input[type='text'],

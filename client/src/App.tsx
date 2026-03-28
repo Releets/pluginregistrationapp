@@ -106,8 +106,8 @@ export default function App() {
       }
     }
 
-    void loadUptime()
-    const uptimeInterval = setInterval(() => void loadUptime(), 1000 * 60 * 5)
+    loadUptime()
+    const uptimeInterval = setInterval(() => loadUptime(), 1000 * 60 * 5)
     return () => clearInterval(uptimeInterval)
   }, [])
 
@@ -228,7 +228,15 @@ export default function App() {
 
   return (
     <div className='App'>
+      {displayModal && activeModalEntry && (
+        <ExitModal
+          displayItem={activeModalEntry.username ?? t.exitModal.fallbackUser}
+          closeModalFunction={closeExitModal}
+        />
+      )}
+
       <NavMenu isReversed={isReversed} animationKeyCounter={counter} handleClick={handleMenuClick} />
+
       {tabs.length > 0 && (
         <div className='tabRow'>
           {tabs.map(tab => (
@@ -243,12 +251,14 @@ export default function App() {
           ))}
         </div>
       )}
-      <>
-        <div className='banner'>{t.banner}</div>
+
+      <h1>{t.banner}</h1>
+
+      <div className='content'>
         {displaySpinner ? (
           <Spinner />
         ) : (
-          <div>
+          <>
             <div className='availabilityIcon'>
               <img
                 className='icon'
@@ -263,9 +273,11 @@ export default function App() {
               </div>
             )}
             <div style={{ height: '100%' }} />
-          </div>
+          </>
         )}
+      </div>
 
+      <div className='content'>
         <form className='queueForm' onSubmit={handleQueueSubmit}>
           <div>
             <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
@@ -298,20 +310,11 @@ export default function App() {
               </button>
             )
           })()}
-
-          <br></br>
         </form>
-
-        {displayModal && activeModalEntry && (
-          <ExitModal
-            displayItem={activeModalEntry.username ?? t.exitModal.fallbackUser}
-            closeModalFunction={closeExitModal}
-          />
-        )}
 
         {!hideLog.value && <HistoryDisplay data={data} />}
         {!hideUptime.value && uptimeSummary && <UptimeDisplay uptime={uptimeSummary} />}
-      </>
+      </div>
     </div>
   )
 }
