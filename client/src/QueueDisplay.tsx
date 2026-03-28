@@ -17,7 +17,7 @@ function formattedFinishTime(entry: QueueEntry, locale: AppLocale): string {
   return formatTime(finishUtcMs, locale)
 }
 
-export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplayProps) {
+export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<QueueDisplayProps>) {
   const { locale, t } = useLanguage()
   const intlTag = intlLocaleTag(locale)
 

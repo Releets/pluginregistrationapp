@@ -1,4 +1,4 @@
-import { createContext, type ReactNode } from 'react'
+import { createContext, useMemo, type ReactNode } from 'react'
 import type { AppLocale } from '../../../models/UserSettings'
 import type { Language } from '../locales/en'
 
@@ -17,8 +17,7 @@ export type LanguageProviderProps = {
   setLocale: (next: AppLocale) => void
 }
 
-export function LanguageProvider({ children, locale, t, setLocale }: LanguageProviderProps) {
-  return (
-    <LanguageContext.Provider value={{ locale, t, setLocale }}>{children}</LanguageContext.Provider>
-  )
+export function LanguageProvider({ children, locale, t, setLocale }: Readonly<LanguageProviderProps>) {
+  const context = useMemo(() => ({ locale, t, setLocale }), [locale, t, setLocale])
+  return <LanguageContext.Provider value={context}>{children}</LanguageContext.Provider>
 }

@@ -10,8 +10,8 @@ function normalizeBrowserLocale(tag: string): string {
 export function detectPreferredLocale(): AppLocale {
   const candidates = [
     ...(typeof navigator !== 'undefined' && navigator.languages ? [...navigator.languages] : []),
-    typeof navigator !== 'undefined' ? navigator.language : '',
-  ].filter(Boolean) as string[]
+    typeof navigator === 'undefined' ? '' : navigator.language,
+  ].filter(Boolean)
 
   for (const raw of candidates) {
     const tag = normalizeBrowserLocale(raw)
