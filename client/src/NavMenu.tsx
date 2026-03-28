@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import './styles/NavMenu.css'
 import useAppSettings from './context/useAppSettings'
 import useIdentity from './context/useIdentity'
@@ -15,11 +14,6 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick }
   const t = useLanguage()
   const { identity, setName } = useIdentity()
   const { language, audioMode, hideLog, godmodePw } = useAppSettings()
-  const [nameDraft, setNameDraft] = useState(identity.name)
-
-  useEffect(() => {
-    setNameDraft(identity.name)
-  }, [identity.name])
 
   return (
     <div className='navmenuwrapper'>
@@ -28,28 +22,18 @@ export default function NavMenu({ isReversed, animationKeyCounter, handleClick }
         <div key={animationKeyCounter + 2} className='line line2'></div>
         <div key={animationKeyCounter + 3} className='line line3'></div>
       </div>
+
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
-          <li>
-            <div className='nameContainer'>
-              <label>{t.nav.yourName}</label>
-              <input
-                className='nameField'
-                type='text'
-                value={nameDraft}
-                maxLength={50}
-                onChange={e => setNameDraft(e.target.value)}
-                onBlur={() => {
-                  const newName = nameDraft.trim()
-                  if (!newName || newName === identity.name) return
-                  setName(newName)
-                }}
-                onKeyDown={e => {
-                  if (e.key !== 'Enter') return
-                  e.currentTarget.blur()
-                }}
-              />
-            </div>
+          <li className='columnInput'>
+            <label>{t.nav.username}</label>
+            <input
+              id='username'
+              type='text'
+              className='text'
+              value={identity.name}
+              onChange={e => setName(e.target.value)}
+            />
           </li>
 
           <li className='columnInput'>
