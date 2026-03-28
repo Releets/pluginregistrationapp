@@ -80,8 +80,8 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = intlLocaleTag(appSettings.language)
-    document.title = t.meta.title
-  }, [appSettings.language, t.meta.title])
+    document.title = t.main.title
+  }, [appSettings.language, t.main.title])
 
   useEffect(() => {
     const loadTabs = async () => {
@@ -132,11 +132,7 @@ export default function App() {
     switchSocketTab(activeTab)
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
-      const soundToPlay = getSoundToPlayForStateUpdate(
-        currentHolderRef.current,
-        newState,
-        getUserId()
-      )
+      const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, getUserId())
       if (soundToPlay === 'kick') {
         playAudio(soundsRef.current[appSettingsRef.current.audioMode].kick)
       } else if (soundToPlay === 'free') {
@@ -182,7 +178,7 @@ export default function App() {
     setDisplayModal(true)
   }
 
-  const activeModalEntry = modalEntryId ? queue.find(e => e.id === modalEntryId) ?? null : null
+  const activeModalEntry = modalEntryId ? (queue.find(e => e.id === modalEntryId) ?? null) : null
 
   useEffect(() => {
     if (displayModal && !activeModalEntry) {
@@ -221,7 +217,7 @@ export default function App() {
     addToQueue({
       id: identity.userId,
       username: identity.name,
-      estimated: parseInt(timeInput ?? '1')
+      estimated: parseInt(timeInput ?? '1'),
     })
   }
 
@@ -238,11 +234,7 @@ export default function App() {
   }
 
   return (
-    <LanguageProvider
-      locale={appSettings.language}
-      t={t}
-      setLocale={next => setOptions('language', next)}
-    >
+    <LanguageProvider locale={appSettings.language} t={t} setLocale={next => setOptions('language', next)}>
       <div className='App'>
         <NavMenu
           isReversed={isReversed}

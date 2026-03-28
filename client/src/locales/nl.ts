@@ -1,7 +1,12 @@
 import type { Language } from './en'
 
 export const language: Language = {
-  meta: {
+  metadata: {
+    name: 'Nederlands',
+    code: 'nl',
+    emoji: '🇳🇱',
+  },
+  main: {
     title: 'Plugin Registration-wachtrij',
     description: 'Is Plugin Registration beschikbaar?',
   },
@@ -14,27 +19,13 @@ export const language: Language = {
     reportPrompt: 'Wil je een bug melden of een suggestie doen?',
     createIssue: 'Maak hier een issue aan',
   },
-  languages: {
-    en: 'Engels',
-    no: 'Noors',
-    nl: 'Nederlands',
-  },
   banner: 'Is Plugin Registration beschikbaar?',
   availability: {
     available: 'Beschikbaar',
     unavailable: 'Niet beschikbaar',
   },
   queue: {
-    durationOptions: [
-      '1 uur',
-      '2 uur',
-      '3 uur',
-      '4 uur',
-      '5 uur',
-      '6 uur',
-      '7 uur',
-      '8 uur',
-    ],
+    durationOptions: ['1 uur', '2 uur', '3 uur', '4 uur', '5 uur', '6 uur', '7 uur', '8 uur'],
     takeOver: 'Overnemen',
     joinQueue: 'In de wachtrij',
     imDone: 'Ik ben klaar',

@@ -1,5 +1,10 @@
 export const language = {
-  meta: {
+  metadata: {
+    name: 'English',
+    code: 'en',
+    emoji: '🇬🇧',
+  },
+  main: {
     title: 'Plugin Registration Queue',
     description: 'Is Plugin Registration available?',
   },
@@ -12,27 +17,13 @@ export const language = {
     reportPrompt: 'Want to report a bug or suggest a feature?',
     createIssue: 'Create an issue here',
   },
-  languages: {
-    en: 'English',
-    no: 'Norwegian',
-    nl: 'Dutch',
-  },
   banner: 'Is Plugin Registration available?',
   availability: {
     available: 'Available',
     unavailable: 'Unavailable',
   },
   queue: {
-    durationOptions: [
-      '1 hour',
-      '2 hours',
-      '3 hours',
-      '4 hours',
-      '5 hours',
-      '6 hours',
-      '7 hours',
-      '8 hours',
-    ],
+    durationOptions: ['1 hour', '2 hours', '3 hours', '4 hours', '5 hours', '6 hours', '7 hours', '8 hours'],
     takeOver: 'Take over',
     joinQueue: 'Join queue',
     imDone: "I'm done",

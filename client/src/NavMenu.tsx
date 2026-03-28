@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './styles/NavMenu.css'
 import type { AppLocale, UserSettings } from '../../models/UserSettings'
+import { localeMetadataByLocale } from './locales'
 import { useLanguage } from './context/useLanguage'
 import { loadUserSettingsFromStorage } from './utils/settings'
 import type { StoredIdentity } from './utils/identity'
@@ -26,7 +27,7 @@ export default function NavMenu({
   userAppSettings,
   identity,
   onIdentityChange,
-}: NavMenuProps) {
+}: Readonly<NavMenuProps>) {
   const { t } = useLanguage()
   const godmodePasswordRef = useRef<HTMLInputElement>(null)
   const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
@@ -70,7 +71,7 @@ export default function NavMenu({
                   }}
                   onKeyDown={e => {
                     if (e.key !== 'Enter') return
-                    ;(e.currentTarget as HTMLInputElement).blur()
+                    e.currentTarget.blur()
                   }}
                 />
               </div>
@@ -85,11 +86,14 @@ export default function NavMenu({
                 value={userAppSettings.language}
                 onChange={e => handleOption('language', e.target.value as AppLocale)}
               >
-                {APP_LOCALES.map(code => (
-                  <option key={code} value={code}>
-                    {t.languages[code]}
-                  </option>
-                ))}
+                {APP_LOCALES.map(code => {
+                  const meta = localeMetadataByLocale[code]
+                  return (
+                    <option key={code} value={code}>
+                      {meta.emoji} {meta.name}
+                    </option>
+                  )
+                })}
               </select>
             </div>
           </li>
@@ -131,7 +135,7 @@ export default function NavMenu({
           <p>{t.nav.reportPrompt}</p>
           <a
             className='githubIssueButton'
-            href='https://github.com/Releets/pluginregistrationapp/issues/new'
+            href='https://github.com/Releets/pluginregistrationapp/issues'
             target='_blank'
             rel='noreferrer'
           >

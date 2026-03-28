@@ -1,7 +1,12 @@
 import type { Language } from './en'
 
 export const language: Language = {
-  meta: {
+  metadata: {
+    name: 'Norsk',
+    code: 'no',
+    emoji: '🇳🇴',
+  },
+  main: {
     title: 'Plugin Registration-kø',
     description: 'Er Plugin Registration ledig?',
   },
@@ -12,12 +17,7 @@ export const language: Language = {
     godmode: 'Godmode-passord',
     language: 'Språk',
     reportPrompt: 'Vil du rapportere en feil eller foreslå en funksjon?',
-    createIssue: 'Opprett en sak her',
-  },
-  languages: {
-    en: 'Engelsk',
-    no: 'Norsk',
-    nl: 'Nederlandsk',
+    createIssue: 'Opprett et issue',
   },
   banner: 'Er Plugin Registration ledig?',
   availability: {
@@ -25,16 +25,7 @@ export const language: Language = {
     unavailable: 'Opptatt',
   },
   queue: {
-    durationOptions: [
-      '1 time',
-      '2 timer',
-      '3 timer',
-      '4 timer',
-      '5 timer',
-      '6 timer',
-      '7 timer',
-      '8 timer',
-    ],
+    durationOptions: ['1 time', '2 timer', '3 timer', '4 timer', '5 timer', '6 timer', '7 timer', '8 timer'],
     takeOver: 'Overta',
     joinQueue: 'Gå i kø',
     imDone: 'Jeg er ferdig',
