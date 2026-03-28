@@ -6,7 +6,7 @@ export type ExitModalProps = {
   closeModalFunction: (confirmed: boolean) => void
 }
 
-export default function ExitModal({ displayItem, closeModalFunction }: ExitModalProps) {
+export default function ExitModal({ displayItem, closeModalFunction }: Readonly<ExitModalProps>) {
   const t = useLanguage()
   return (
     <div className='screenBlur'>

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import './styles/NavMenu.css'
 import useAppSettings from './context/useAppSettings'
-import useLanguage from './context/useLanguage'
 import type { LanguageCode } from './locales'
 import { localeMetadataByLocale } from './locales'
 import type { StoredIdentity } from './utils/identity'
 import { setStoredIdentity } from './utils/identity'
+import useLanguage from './context/useLanguage'
 
 const APP_LOCALES: LanguageCode[] = ['en', 'no', 'nl']
 
