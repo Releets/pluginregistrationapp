@@ -58,6 +58,8 @@ export default function App() {
   const currentHolderRef = useRef<QueueEntryCurrent | undefined>(undefined)
   const soundsRef = useRef(sounds)
   soundsRef.current = sounds
+  const audioModeRef = useRef(audioMode.value)
+  audioModeRef.current = audioMode.value
 
   useEffect(() => {
     const loadTabs = async () => {
@@ -112,10 +114,11 @@ export default function App() {
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, userId)
+      const mode = audioModeRef.current
       if (soundToPlay === 'kick') {
-        playAudio(soundsRef.current[audioMode.value].kick)
+        playAudio(soundsRef.current[mode].kick)
       } else if (soundToPlay === 'free') {
-        playAudio(soundsRef.current[audioMode.value].free)
+        playAudio(soundsRef.current[mode].free)
       }
       currentHolderRef.current = newHolder
       setData(newState)
@@ -126,7 +129,7 @@ export default function App() {
     return () => {
       socket.off('stateUpdate', handleStateUpdate)
     }
-  }, [activeTab, audioMode.value, identity.userId])
+  }, [activeTab, identity.userId])
 
   const addToQueue = (queueEntry: QueueEntry) => {
     if (!activeTab) return

@@ -50,7 +50,7 @@ export function IdentityProvider({ children }: Readonly<{ children: ReactNode }>
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
 
-  const isLoggedIn = Boolean(identity.name && identity.userId && identity.privateKey)
+  const isLoggedIn = Boolean(identity.userId && identity.privateKey)
 
   function setNameHandler(name: string): void {
     setNameInput(name)
@@ -58,7 +58,7 @@ export function IdentityProvider({ children }: Readonly<{ children: ReactNode }>
     storeIdentity({ ...identity, name })
   }
 
-  const context = useMemo(() => ({ identity, setName: setNameHandler }), [identity])
+  const context = useMemo(() => ({ identity, setName: setNameHandler }), [identity.userId, identity.privateKey])
 
   async function loginHandler(name: string): Promise<void> {
     setIsLoggingIn(true)
