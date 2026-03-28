@@ -1,14 +1,23 @@
 .historyDisplay {
   color: white;
   width: 256px;
-  margin-bottom: 2em;
+  overflow-y: auto;
+  max-height: 25dvh;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.historyHeader {
+  color: white;
+  margin: 0 0 0.5em 0;
 }
 
 .historyEntry {
   background-color: rgba(0, 0, 0, 0.1);
   padding: 1em;
   border-radius: 0.5em;
-  margin-bottom: 0.5em;
 }
 
 .username {

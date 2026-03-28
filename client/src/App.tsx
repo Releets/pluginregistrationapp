@@ -269,7 +269,7 @@ export default function App() {
         )}
       </div>
 
-      <div className='content'>
+      <div className='queueFormContainer'>
         <form className='queueForm' onSubmit={handleQueueSubmit}>
           <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
             {Array.from({ length: 8 }, (_, i) => (

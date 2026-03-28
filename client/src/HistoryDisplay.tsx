@@ -19,13 +19,15 @@ export default function HistoryDisplay({ data }: Readonly<HistoryDisplayProps>) 
   const opacity = (i: number) => 1 - i / (historyQueue.length - 0.5)
 
   return (
-    <div className='historyDisplay'>
-      <h2 style={{ color: 'white' }}>{t.history.title}</h2>
-      {historyQueue.map((item, i) => (
-        <div className='historyEntry' key={item.username + item.exited} style={{ opacity: opacity(i) }}>
-          <HistoryEntry item={item} />
-        </div>
-      ))}
+    <div>
+      <h2 className='historyHeader'>{t.history.title}</h2>
+      <div className='historyDisplay'>
+        {historyQueue.map((item, i) => (
+          <div className='historyEntry' key={item.username + item.exited} style={{ opacity: opacity(i) }}>
+            <HistoryEntry item={item} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
