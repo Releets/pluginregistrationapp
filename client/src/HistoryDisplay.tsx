@@ -1,7 +1,6 @@
 import './styles/HistoryDisplay.css'
 import { isExited, QueueEntry, QueueEntryExited } from '../../models/QueueEntry'
 import useAppSettings from './context/useAppSettings'
-import type { LanguageCode } from './locales'
 import { formatDateTime } from './utils/dateFormat'
 import useLanguage from './context/useLanguage'
 
@@ -9,11 +8,8 @@ export type HistoryDisplayProps = {
   data: QueueEntry[]
 }
 
-export default function HistoryDisplay(props: Readonly<HistoryDisplayProps>) {
-  const { data } = props
+export default function HistoryDisplay({ data }: Readonly<HistoryDisplayProps>) {
   const t = useLanguage()
-  const { language } = useAppSettings()
-  const locale = language.value
 
   const historyQueue = data
     .filter(e => isExited(e))
@@ -27,25 +23,20 @@ export default function HistoryDisplay(props: Readonly<HistoryDisplayProps>) {
       <h2 style={{ color: 'white' }}>{t.history.title}</h2>
       {historyQueue.map((item, i) => (
         <div className='historyEntry' key={item.username + item.exited} style={{ opacity: opacity(i) }}>
-          <HistoryEntry item={item} locale={locale} />
+          <HistoryEntry item={item} />
         </div>
       ))}
     </div>
   )
 }
 
-type HistoryEntryProps = {
-  item: QueueEntryExited
-  locale: LanguageCode
-}
-
-function HistoryEntry(props: Readonly<HistoryEntryProps>) {
-  const { item, locale } = props
+function HistoryEntry({ item }: Readonly<{ item: QueueEntryExited }>) {
+  const { language } = useAppSettings()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       <div className='username'>{item.username}</div>
-      <div className='timestamp'>{formatDateTime(item.exited, locale)}</div>
+      <div className='timestamp'>{formatDateTime(item.exited, language.value)}</div>
     </div>
   )
 }

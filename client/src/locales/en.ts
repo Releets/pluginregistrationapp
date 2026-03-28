@@ -45,7 +45,7 @@ export const language = {
     fallbackUser: 'this user',
   },
   history: {
-    title: 'Log',
+    title: 'History',
   },
   login: {
     title: 'Log in',
