@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react'
 import './styles/NavMenu.css'
 import useAppSettings from './context/useAppSettings'
-import type { LanguageCode } from './locales'
-import { localeMetadataByLocale } from './locales'
+import { languages, type LanguageCode } from './locales'
 import type { StoredIdentity } from './utils/identity'
 import { setStoredIdentity } from './utils/identity'
 import useLanguage from './context/useLanguage'
-
-const APP_LOCALES: LanguageCode[] = ['en', 'no', 'nl']
 
 export type NavMenuProps = {
   isReversed: boolean
@@ -25,7 +22,7 @@ export default function NavMenu({
   onIdentityChange,
 }: Readonly<NavMenuProps>) {
   const t = useLanguage()
-  const settings = useAppSettings()
+  const { username, language, audioMode, hideLog, godmodePw } = useAppSettings()
   const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
 
   useEffect(() => {
@@ -66,60 +63,63 @@ export default function NavMenu({
               </div>
             </li>
           )}
-          <li>
-            <div className='nameContainer'>
-              <label htmlFor='app-language-select'>{t.nav.language}</label>
-              <select
-                id='app-language-select'
-                className='nameField'
-                value={settings.language.value}
-                onChange={e => settings.language.set(e.target.value as LanguageCode)}
-              >
-                {APP_LOCALES.map(code => {
-                  const meta = localeMetadataByLocale[code]
-                  return (
-                    <option key={code} value={code}>
-                      {meta.emoji} {meta.name}
-                    </option>
-                  )
-                })}
-              </select>
-            </div>
+
+          <li className='columnInput'>
+            <label>{t.nav.username}</label>
+            <input
+              id='username'
+              type='text'
+              placeholder={t.nav.username}
+              value={username.value}
+              onChange={e => username.set(e.target.value)}
+            />
           </li>
-          <li>
-            <div className='checkbox-wrapper'>
-              <input
-                type='checkbox'
-                className='check'
-                checked={settings.hideLog.value}
-                onChange={e => settings.hideLog.set(e.target.checked)}
-              />
-              <label>{t.nav.hideLog}</label>
-            </div>
+
+          <li className='columnInput'>
+            <label>{t.nav.language}</label>
+            <select id='language' value={language.value} onChange={e => language.set(e.target.value as LanguageCode)}>
+              {Object.values(languages).map(language => (
+                <option key={language.metadata.code} value={language.metadata.code}>
+                  {language.metadata.emoji} {language.metadata.name}
+                </option>
+              ))}
+            </select>
           </li>
-          <li>
-            <div className='checkbox-wrapper'>
-              <input
-                type='checkbox'
-                className='check'
-                checked={settings.audioMode.value === 'tobias'}
-                onChange={e => settings.audioMode.set(e.target.checked ? 'tobias' : 'normal')}
-              />
-              <label>{t.nav.tobiasMode}</label>
-            </div>
+
+          <li className='rowInput'>
+            <label>{t.nav.audioMode}</label>
+            <input
+              id='audioMode'
+              type='checkbox'
+              className='check'
+              checked={audioMode.value === 'tobias'}
+              onChange={e => audioMode.set(e.target.checked ? 'tobias' : 'normal')}
+            />
           </li>
-          <li>
-            <div className='passwordContainer'>
-              <input
-                className='passwordField'
-                type='password'
-                placeholder={t.nav.godmode}
-                value={settings.godmodePassword.value}
-                onChange={e => settings.godmodePassword.set(e.target.value)}
-              />
-            </div>
+
+          <li className='rowInput'>
+            <label>{t.nav.hideLog}</label>
+            <input
+              id='hideLog'
+              type='checkbox'
+              className='check'
+              checked={hideLog.value}
+              onChange={e => hideLog.set(e.target.checked)}
+            />
+          </li>
+
+          <li className='columnInput'>
+            <label>{t.nav.godmodePw}</label>
+            <input
+              id='godmodePw'
+              type='password'
+              placeholder={t.nav.godmodePw}
+              value={godmodePw.value}
+              onChange={e => godmodePw.set(e.target.value)}
+            />
           </li>
         </ul>
+
         <div className='menuFooter'>
           <p>{t.nav.reportPrompt}</p>
           <a

@@ -1,10 +1,10 @@
 import './styles/QueueDisplay.css'
 import type { QueueEntry } from '../../models/QueueEntry'
 import useAppSettings from './context/useAppSettings'
-import useLanguage from './context/useLanguage'
-import { intlLocaleTag, type LanguageCode } from './locales'
+import { type LanguageCode } from './locales'
 import { formatTime } from './utils/dateFormat'
 import { formatHourEstimate } from './utils/hourEstimate'
+import useLanguage from './context/useLanguage'
 
 export type QueueDisplayProps = {
   items: QueueEntry[]
@@ -20,8 +20,6 @@ function formattedFinishTime(entry: QueueEntry, locale: LanguageCode): string {
 export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<QueueDisplayProps>) {
   const t = useLanguage()
   const { language } = useAppSettings()
-  const locale = language.value
-  const intlTag = intlLocaleTag(locale)
 
   return (
     <div className='queue'>
@@ -35,14 +33,12 @@ export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<Que
             {i === 0 ? (
               <>
                 <div className='entryTimeContainer'>{t.queueDisplay.bookedUntil}</div>
-                <div className='entryTimeContainer'>{formattedFinishTime(item, locale)}</div>
+                <div className='entryTimeContainer'>{formattedFinishTime(item, language.value)}</div>
               </>
             ) : (
               <>
                 <div className='entryTimeContainer'>{t.queueDisplay.estimated}</div>
-                <div className='entryTimeContainer'>
-                  {formatHourEstimate(item.estimated, intlTag, t)}
-                </div>
+                <div className='entryTimeContainer'>{formatHourEstimate(item.estimated, language.value, t)}</div>
               </>
             )}
           </div>

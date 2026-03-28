@@ -14,11 +14,12 @@ export const language: Language = {
   nav: {
     yourName: 'Ditt navn',
     hideLog: 'Skjul logg',
-    tobiasMode: 'Tobias-modus',
-    godmode: 'Godmode-passord',
+    audioMode: 'Tobias-modus',
+    godmodePw: 'Godmode-passord',
     language: 'Språk',
     reportPrompt: 'Vil du rapportere en feil eller foreslå en funksjon?',
     createIssue: 'Opprett et issue',
+    username: 'Navn',
   },
   banner: 'Er Plugin Registration ledig?',
   availability: {

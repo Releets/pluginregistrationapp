@@ -10,7 +10,6 @@ import {
   switchSocketTab,
   TabConfig,
 } from './api/queueApi'
-import { languages } from './locales'
 import { playAudio } from './utils/audio'
 import { getSoundToPlayForStateUpdate } from './utils/stateUpdateSound'
 import { type StoredIdentity, getStoredIdentity, getUserId, setStoredIdentity } from './utils/identity'
@@ -26,15 +25,15 @@ import queueKickSound from './audio/queue_kick.mp3'
 import queueKickSoundTob from './audio/queue_kick_tob.mp3'
 import check from './icons/check.svg'
 import cross from './icons/cross.svg'
-import useAppSettings from './context/useAppSettings'
 import useLanguage from './context/useLanguage'
+import useAppSettings from './context/useAppSettings'
 
 let counter = 0
 const LAST_ACTIVE_TAB_STORAGE_KEY = 'lastActiveTab'
 
 export default function App() {
+  const { audioMode, hideLog, godmodePw } = useAppSettings()
   const t = useLanguage()
-  const settings = useAppSettings()
   const [tabs, setTabs] = useState<TabConfig[]>([])
   const [activeTab, setActiveTab] = useState<string>()
   const [data, setData] = useState(new Array<QueueEntry>())
@@ -87,12 +86,12 @@ export default function App() {
       } catch (err) {
         console.error('Failed to load tabs:', err)
         setDisplaySpinner(false)
-        alert(languages[settings.language.value].alerts.tabsLoadFailed)
+        alert(t.alerts.tabsLoadFailed)
       }
     }
 
     loadTabs()
-  }, [settings.language.value])
+  }, [])
 
   useEffect(() => {
     if (!activeTab) return
@@ -110,14 +109,14 @@ export default function App() {
     currentHolderRef.current = undefined
     const socket = getSocket()
     switchSocketTab(activeTab)
-    const audioMode = settings.audioMode.value
+
     const handleStateUpdate = (newState: QueueEntry[]) => {
       const newHolder = newState.find(entry => isCurrent(entry))
       const soundToPlay = getSoundToPlayForStateUpdate(currentHolderRef.current, newState, getUserId())
       if (soundToPlay === 'kick') {
-        playAudio(soundsRef.current[audioMode].kick)
+        playAudio(soundsRef.current[audioMode.value].kick)
       } else if (soundToPlay === 'free') {
-        playAudio(soundsRef.current[audioMode].free)
+        playAudio(soundsRef.current[audioMode.value].free)
       }
       currentHolderRef.current = newHolder
       setData(newState)
@@ -128,26 +127,25 @@ export default function App() {
     return () => {
       socket.off('stateUpdate', handleStateUpdate)
     }
-  }, [activeTab, settings.audioMode.value])
+  }, [activeTab, audioMode.value])
 
   const addToQueue = (queueEntry: QueueEntry) => {
     if (!activeTab) return
     void apiAddToQueue(queueEntry, activeTab).catch(() => {
-      alert(languages[settings.language.value].alerts.addToQueueFailed)
+      alert(t.alerts.addToQueueFailed)
     })
   }
 
   const removeFromQueue = async (user: QueueEntry) => {
-    const messages = languages[settings.language.value]
-    if (!activeTab) throw new Error(messages.errors.activeTabRequired)
+    if (!activeTab) throw new Error(t.errors.activeTabRequired)
     currentHolderRef.current = undefined
-    if (!identity?.privateKey) throw new Error(messages.errors.mustBeLoggedInToLeave)
+    if (!identity?.privateKey) throw new Error(t.errors.mustBeLoggedInToLeave)
 
     const legacyPrivateKey = localStorage.getItem('privateKey')
     const privateKeyToSubmit = user.id === legacyPrivateKey ? legacyPrivateKey : identity.privateKey
-    if (!privateKeyToSubmit) throw new Error(messages.errors.missingPrivateKey)
+    if (!privateKeyToSubmit) throw new Error(t.errors.missingPrivateKey)
 
-    await apiRemoveFromQueue(user, privateKeyToSubmit, settings.godmodePassword.value, activeTab)
+    await apiRemoveFromQueue(user, privateKeyToSubmit, godmodePw.value, activeTab)
   }
 
   const timeInputRef = useRef<HTMLSelectElement>(null)
@@ -172,7 +170,7 @@ export default function App() {
     if (userDidConfirm && activeModalEntry) {
       void removeFromQueue(activeModalEntry).catch(err => {
         const message = err instanceof Error ? err.message : ''
-        const lang = languages[settings.language.value]
+        const lang = t
         alert(message || lang.alerts.removeFromQueueFailed)
         console.error(message, err)
       })
@@ -297,7 +295,7 @@ export default function App() {
             />
           )}
 
-          {!settings.hideLog.value && <HistoryDisplay data={data} />}
+          {!hideLog.value && <HistoryDisplay data={data} />}
         </>
       ) : (
         <div className='loginPrompt'>

@@ -12,11 +12,12 @@ export const language = {
   nav: {
     yourName: 'Your name',
     hideLog: 'Hide log',
-    tobiasMode: 'Tobias mode',
-    godmode: 'Godmode password',
+    audioMode: 'Tobias mode',
+    godmodePw: 'Godmode password',
     language: 'Language',
     reportPrompt: 'Want to report a bug or suggest a feature?',
     createIssue: 'Create an issue here',
+    username: 'Name',
   },
   banner: 'Is Plugin Registration available?',
   availability: {
