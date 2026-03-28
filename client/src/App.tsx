@@ -271,15 +271,13 @@ export default function App() {
 
       <div className='content'>
         <form className='queueForm' onSubmit={handleQueueSubmit}>
-          <div>
-            <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
-              {t.queue.durationOptions.map((label, i) => (
-                <option key={i + 1} value={String(i + 1)}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select className='textinput selectinput' ref={timeInputRef} defaultValue='1'>
+            {t.queue.durationOptions.map((label, i) => (
+              <option key={i + 1} value={String(i + 1)}>
+                {label}
+              </option>
+            ))}
+          </select>
 
           {(() => {
             const userEntry = queue.find(e => e.id === identity.userId)

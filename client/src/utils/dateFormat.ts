@@ -11,7 +11,7 @@ const datePartFormatters = new Map<string, Intl.DateTimeFormat>()
 function timeFormatterFor(intlLocale: string): Intl.DateTimeFormat {
   let f = timeFormatters.get(intlLocale)
   if (!f) {
-    f = new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit' })
+    f = new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit', hour12: false })
     timeFormatters.set(intlLocale, f)
   }
   return f
@@ -20,7 +20,7 @@ function timeFormatterFor(intlLocale: string): Intl.DateTimeFormat {
 function datePartFormatterFor(intlLocale: string): Intl.DateTimeFormat {
   let f = datePartFormatters.get(intlLocale)
   if (!f) {
-    f = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' })
+    f = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short', hour12: false })
     datePartFormatters.set(intlLocale, f)
   }
   return f
