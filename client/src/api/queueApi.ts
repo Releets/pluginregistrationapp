@@ -8,6 +8,22 @@ export type TabConfig = {
   label: string
 }
 
+export type UptimeDayStatus = 'green' | 'yellow' | 'red'
+
+export type UptimeDay = {
+  date: string
+  expected: number
+  actual: number
+  status: UptimeDayStatus
+}
+
+export type UptimeSummary = {
+  uptimePercentage: number
+  totalExpected: number
+  totalActual: number
+  days: UptimeDay[]
+}
+
 let socketInstance: Socket | null = null
 let socketTabId: string | null = null
 
@@ -29,7 +45,11 @@ export function getSocket(): Socket {
   ensureAxiosBaseUrl()
   if (!socketInstance) {
     const adr = getBackendUrl()
-    socketInstance = io(adr, { transports: ['websocket'] })
+    // Allow long-polling fallback when websocket upgrades fail (seen in some browsers/dev setups).
+    socketInstance = io(adr, { transports: ['polling', 'websocket'] })
+    socketInstance.on('connect_error', err => {
+      console.warn(timestamp(), 'Socket connection error:', err.message)
+    })
   }
   return socketInstance
 }
@@ -45,6 +65,13 @@ export async function getTabs(): Promise<TabConfig[]> {
   ensureAxiosBaseUrl()
   const adr = getBackendUrl()
   const response = await axios.get<TabConfig[]>(adr + '/tabs')
+  return response.data
+}
+
+export async function getUptimeSummary(): Promise<UptimeSummary> {
+  ensureAxiosBaseUrl()
+  const adr = getBackendUrl()
+  const response = await axios.get<UptimeSummary>(adr + '/uptime')
   return response.data
 }
 

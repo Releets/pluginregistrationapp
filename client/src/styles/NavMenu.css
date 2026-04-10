@@ -6,8 +6,8 @@
   top: 0;
   right: 0;
   width: 15em;
-  height: 100vh;
-  z-index: 20;
+  height: 50dvh;
+  z-index: 2;
   overflow-x: hidden;
   box-sizing: border-box;
 }
@@ -54,7 +54,7 @@
   width: 100%;
 }
 
-.options li{
+.options li {
   width: 100%;
   max-width: 10em;
 }
@@ -115,7 +115,7 @@
   max-width: 12em;
   box-sizing: border-box;
   margin: 0.25em auto 0 auto;
-  display: block; 
+  display: block;
 }
 
 .passwordContainer {
