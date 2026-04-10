@@ -7,11 +7,13 @@ export type LanguageContextValue = Language
 export const LanguageContext = createContext<LanguageContextValue | undefined>(undefined)
 
 function detectPreferredLocale(): LanguageCode | undefined {
-  for (const language of navigator.languages) {
-    for (const supportedLanguage of Object.values(languages)) {
-      if (supportedLanguage.metadata.codes.includes(language)) {
-        return supportedLanguage.metadata.code as LanguageCode
-      }
+  const langOpts = Intl.DateTimeFormat().resolvedOptions()
+  const lang = langOpts.locale.split('-')[0]
+  if (!lang) return undefined
+
+  for (const supportedLanguage of Object.values(languages)) {
+    if (supportedLanguage.metadata.codes.includes(lang)) {
+      return supportedLanguage.metadata.code as LanguageCode
     }
   }
 }
