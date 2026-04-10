@@ -1,3 +1,4 @@
+import './styles/UptimeDisplay.css'
 import { UptimeSummary } from './api/queueApi'
 
 type Props = {
