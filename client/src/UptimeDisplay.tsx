@@ -8,9 +8,11 @@ type Props = {
 export default function UptimeDisplay({ uptime }: Readonly<Props>) {
   return (
     <div className='uptimeDock'>
+      
       <div className='uptimeHeader'>
         <span className='uptimePercentage'>{uptime.uptimePercentage.toFixed(1)}% oppetid</span>
       </div>
+      
       <div className='uptimeTimeline'>
         {uptime.days.map(day => (
           <div key={day.date} className='uptimeDotWrap'>
@@ -22,6 +24,7 @@ export default function UptimeDisplay({ uptime }: Readonly<Props>) {
           </div>
         ))}
       </div>
+      
       <div className='uptimeFooter'>
         <span>For 30 dager siden</span>
         <span>I dag</span>

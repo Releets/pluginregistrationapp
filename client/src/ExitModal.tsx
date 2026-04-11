@@ -1,3 +1,4 @@
+import useLanguage from './context/useLanguage'
 import './styles/ExitModal.css'
 
 export type ExitModalProps = {
@@ -5,7 +6,8 @@ export type ExitModalProps = {
   closeModalFunction: (confirmed: boolean) => void
 }
 
-export default function ExitModal({ displayItem, closeModalFunction }: ExitModalProps) {
+export default function ExitModal({ displayItem, closeModalFunction }: Readonly<ExitModalProps>) {
+  const t = useLanguage()
   return (
     <div className='screenBlur'>
       <div className='modalContainer'>
@@ -13,12 +15,12 @@ export default function ExitModal({ displayItem, closeModalFunction }: ExitModal
           X
         </button>
         <div className='modalContent'>
-          Er du sikker på at du vil trekke <br></br>
+          {t.exitModal.line1} <br></br>
           <h2 className='focusText'>{displayItem}</h2>
-          fra køen?
+          {t.exitModal.line2}
         </div>
         <button className='confirmButton' onClick={() => closeModalFunction(true)}>
-          Bekreft
+          {t.exitModal.confirm}
         </button>
       </div>
     </div>

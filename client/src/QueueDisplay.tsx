@@ -1,19 +1,25 @@
 import './styles/QueueDisplay.css'
 import type { QueueEntry } from '../../models/QueueEntry'
+import useAppSettings from './context/useAppSettings'
+import { type LanguageCode } from './locales'
 import { formatTime } from './utils/dateFormat'
+import useLanguage from './context/useLanguage'
 
 export type QueueDisplayProps = {
   items: QueueEntry[]
   leaveQueueFunction: (id: string) => void
 }
 
-function formattedFinishTime(entry: QueueEntry): string {
+function formattedFinishTime(entry: QueueEntry, locale: LanguageCode): string {
   const entered = entry.entered ?? 0
   const finishUtcMs = entered + entry.estimated * 60 * 60 * 1000
-  return formatTime(finishUtcMs)
+  return formatTime(finishUtcMs, locale)
 }
 
-export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplayProps) {
+export default function QueueDisplay({ leaveQueueFunction, items }: Readonly<QueueDisplayProps>) {
+  const t = useLanguage()
+  const { language } = useAppSettings()
+
   return (
     <div className='queue'>
       {[...items]
@@ -25,15 +31,13 @@ export default function QueueDisplay({ leaveQueueFunction, items }: QueueDisplay
             </div>
             {i === 0 ? (
               <>
-                <div className='entryTimeContainer'>Booket til</div>
-                <div className='entryTimeContainer'>{formattedFinishTime(item)}</div>
+                <div className='entryTimeContainer'>{t.queueDisplay.bookedUntil}</div>
+                <div className='entryTimeContainer'>{formattedFinishTime(item, language.value)}</div>
               </>
             ) : (
               <>
-                <div className='entryTimeContainer'>Estimert</div>
-                <div className='entryTimeContainer'>
-                  {item.estimated} time{item.estimated === 1 ? '' : 'r'}
-                </div>
+                <div className='entryTimeContainer'>{t.queueDisplay.estimated}</div>
+                <div className='entryTimeContainer'>{t.queueDisplay.hourEstimate(item.estimated)}</div>
               </>
             )}
           </div>

@@ -1,7 +1,55 @@
+.tabRow {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.tabButton {
+  border: 1px solid #7fbab7;
+  background: transparent;
+  color: #cde8e6;
+  padding: 0.4em 0.9em;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.tabButton:hover {
+  background: #0f4f4c;
+}
+
+.activeTab {
+  background: #126662;
+  color: white;
+  border-color: #126662;
+}
+
+.queueContainer {
+  flex: 1;
+  margin-bottom: 2em;
+}
+
+.queueFormContainer {
+  margin-bottom: 2em;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.queueForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
 .userBox {
   background-color: rgb(14, 117, 100);
-  width: 7vw;
-  height: 7vw;
+  width: 5rem;
+  height: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,14 +59,16 @@
   border-radius: 50%;
   box-sizing: border-box;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  font-size: 1vw;
+  font-size: 12px;
   font-family: Lato, sans-serif;
 }
+
 .userBox:hover {
   background-color: rgba(255, 0, 0, 0.3);
   border: 5px solid rgba(255, 0, 0, 0.6);
   cursor: pointer;
 }
+
 .queue {
   display: inline-flex;
   justify-content: center;
@@ -32,8 +82,8 @@
   animation: hoverUpDown 2s ease-in-out infinite;
 }
 .queEnd {
-  width: 7vw;
-  height: 7vw;
+  width: 5rem;
+  height: 5rem;
 }
 
 .entryTimeContainer {

@@ -1,42 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
 import './styles/NavMenu.css'
-import type { UserSettings } from '../../models/UserSettings'
-import { loadUserSettingsFromStorage } from './utils/settings'
-import type { StoredIdentity } from './utils/identity'
-import { setStoredIdentity } from './utils/identity'
+import useAppSettings from './context/useAppSettings'
+import useIdentity from './context/useIdentity'
+import { languages, type LanguageCode } from './locales'
+import useLanguage from './context/useLanguage'
 
 export type NavMenuProps = {
   isReversed: boolean
   animationKeyCounter: number
   handleClick: () => void
-  handleOption: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void
-  userAppSettings: UserSettings
-  identity: StoredIdentity | null
-  onIdentityChange: (next: StoredIdentity) => void
 }
 
-export default function NavMenu({
-  isReversed,
-  animationKeyCounter,
-  handleClick,
-  handleOption,
-  userAppSettings,
-  identity,
-  onIdentityChange,
-}: NavMenuProps) {
-  const godmodePasswordRef = useRef<HTMLInputElement>(null)
-  const [nameDraft, setNameDraft] = useState<string>(identity?.name ?? '')
-
-  useEffect(() => {
-    setNameDraft(identity?.name ?? '')
-  }, [identity?.name])
-
-  useEffect(() => {
-    const stored = loadUserSettingsFromStorage()
-    if (stored?.godmodePassword != null && godmodePasswordRef.current) {
-      godmodePasswordRef.current.value = stored.godmodePassword
-    }
-  }, [])
+export default function NavMenu({ isReversed, animationKeyCounter, handleClick }: Readonly<NavMenuProps>) {
+  const t = useLanguage()
+  const { identity, setName } = useIdentity()
+  const { language, audioMode, hideLog, hideUptime, godmodePw } = useAppSettings()
 
   return (
     <div className='navmenuwrapper'>
@@ -45,87 +22,85 @@ export default function NavMenu({
         <div key={animationKeyCounter + 2} className='line line2'></div>
         <div key={animationKeyCounter + 3} className='line line3'></div>
       </div>
+
       <div className={`menu ${isReversed ? 'invisible' : 'visible'}`}>
         <ul className='options'>
-          {identity && (
-            <li>
-              <div className='nameContainer'>
-                <label>Ditt navn</label>
-                <input
-                  className='nameField'
-                  type='text'
-                  value={nameDraft}
-                  maxLength={50}
-                  onChange={e => setNameDraft(e.target.value)}
-                  onBlur={() => {
-                    const newName = nameDraft.trim()
-                    if (!newName || newName === identity.name) return
-                    const next = { ...identity, name: newName }
-                    setStoredIdentity(next)
-                    onIdentityChange(next)
-                  }}
-                  onKeyDown={e => {
-                    if (e.key !== 'Enter') return
-                    ;(e.currentTarget as HTMLInputElement).blur()
-                  }}
-                />
-              </div>
-            </li>
-          )}
-          <li>
-            <div className='checkbox-wrapper'>
-              <input
-                type='checkbox'
-                className='check'
-                checked={userAppSettings.hideUptime}
-                onChange={e => handleOption('hideUptime', e.target.checked)}
-              />
-              <label>Hide Uptime</label>
-            </div>
+          <li className='columnInput'>
+            <label>{t.nav.username}</label>
+            <input
+              id='username'
+              type='text'
+              className='text'
+              value={identity.name}
+              onChange={e => setName(e.target.value)}
+            />
           </li>
-          <li>
-            <div className='checkbox-wrapper'>
-              <input
-                type='checkbox'
-                className='check'
-                checked={userAppSettings.hideLog}
-                onChange={e => handleOption('hideLog', e.target.checked)}
-              />
-              <label>Hide Log</label>
-            </div>
+
+          <li className='columnInput'>
+            <label>{t.nav.language}</label>
+            <select id='language' value={language.value} onChange={e => language.set(e.target.value as LanguageCode)}>
+              {Object.values(languages).map(lang => (
+                <option key={lang.metadata.code} value={lang.metadata.code}>
+                  {lang.metadata.emoji} {lang.metadata.name}
+                </option>
+              ))}
+            </select>
           </li>
-          <li>
-            <div className='checkbox-wrapper'>
-              <input
-                type='checkbox'
-                className='check'
-                checked={userAppSettings.audioMode === 'tobias'}
-                onChange={e => handleOption('audioMode', e.target.checked ? 'tobias' : 'normal')}
-              />
-              <label>Tobias Mode</label>
-            </div>
+
+          <li className='rowInput'>
+            <label>{t.nav.audioMode}</label>
+            <input
+              id='audioMode'
+              type='checkbox'
+              className='check'
+              checked={audioMode.value === 'tobias'}
+              onChange={e => audioMode.set(e.target.checked ? 'tobias' : 'normal')}
+            />
           </li>
-          <li>
-            <div className='passwordContainer'>
-              <input
-                className='passwordField'
-                ref={godmodePasswordRef}
-                type='password'
-                placeholder='Godmode password'
-                onChange={e => handleOption('godmodePassword', e.target.value)}
-              />
-            </div>
+
+          <li className='rowInput'>
+            <label>{t.nav.hideLog}</label>
+            <input
+              id='hideLog'
+              type='checkbox'
+              className='check'
+              checked={hideLog.value}
+              onChange={e => hideLog.set(e.target.checked)}
+            />
+          </li>
+
+          <li className='rowInput'>
+            <label>{t.nav.hideUptime}</label>
+            <input
+              id='hideUptime'
+              type='checkbox'
+              className='check'
+              checked={hideUptime.value}
+              onChange={e => hideUptime.set(e.target.checked)}
+            />
+          </li>
+
+          <li className='columnInput'>
+            <label>{t.nav.godmodePw}</label>
+            <input
+              id='godmodePw'
+              type='password'
+              placeholder={t.nav.godmodePw}
+              value={godmodePw.value}
+              onChange={e => godmodePw.set(e.target.value)}
+            />
           </li>
         </ul>
+
         <div className='menuFooter'>
-          <p>Want to report a bug or suggest a feature?</p>
+          <p>{t.nav.reportPrompt}</p>
           <a
             className='githubIssueButton'
-            href='https://github.com/Releets/pluginregistrationapp/issues/new'
+            href='https://github.com/Releets/pluginregistrationapp/issues'
             target='_blank'
             rel='noreferrer'
           >
-            Create an issue here
+            {t.nav.createIssue}
           </a>
         </div>
       </div>
