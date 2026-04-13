@@ -36,6 +36,11 @@ export const language = {
     estimated: 'Estimated',
     hourEstimate: (n: number) => `${n} hour${n === 1 ? '' : 's'}`,
   },
+  uptimeDisplay: {
+    percentLine: (pct: number) => `${pct.toFixed(1)}% uptime`,
+    footerStart: '30 days ago',
+    footerEnd: 'Today',
+  },
   exitModal: {
     line1: 'Are you sure you want to remove',
     line2: 'from the queue?',

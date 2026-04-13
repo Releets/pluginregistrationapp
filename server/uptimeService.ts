@@ -97,12 +97,24 @@ export function getUptimeSummary(now = nowMs()): UptimeSummary {
     const dayEnd = dayStart + DAY_MS
     const date = asUtcDate(dayStart)
 
-    const expected = offset === 0 ? new Date(now).getUTCHours() + 1 : 24
-
     let actual = 0
+    let minLogInDay: number | undefined
     for (const log of slotToTimestamp.values()) {
-      if (log >= dayStart && log < dayEnd) actual++
+      if (log >= dayStart && log < dayEnd) {
+        actual++
+        if (minLogInDay === undefined || log < minLogInDay) minLogInDay = log
+      }
     }
+
+    let expected: number
+    if (offset === 0) {
+      const slotsThroughNow = Math.floor((now - dayStart) / HOUR_MS) + 1
+      const trimStart = minLogInDay !== undefined ? Math.floor((minLogInDay - dayStart) / HOUR_MS) : 0
+      expected = Math.max(1, Math.min(24, slotsThroughNow - trimStart))
+    } else {
+      expected = 24
+    }
+
     if (actual > expected) actual = expected
 
     const status: UptimeDayStatus = actual === 0 ? 'red' : actual === expected ? 'green' : 'yellow'
