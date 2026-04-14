@@ -1,16 +1,19 @@
 import './styles/UptimeDisplay.css'
 import { UptimeSummary } from './api/queueApi'
+import useLanguage from './context/useLanguage'
 
 type Props = {
   uptime: UptimeSummary
 }
 
 export default function UptimeDisplay({ uptime }: Readonly<Props>) {
+  const t = useLanguage()
+
   return (
     <div className='uptimeDock'>
       
       <div className='uptimeHeader'>
-        <span className='uptimePercentage'>{uptime.uptimePercentage.toFixed(1)}% oppetid</span>
+        <span className='uptimePercentage'>{t.uptimeDisplay.percentLine(uptime.uptimePercentage)}</span>
       </div>
       
       <div className='uptimeTimeline'>
@@ -19,15 +22,15 @@ export default function UptimeDisplay({ uptime }: Readonly<Props>) {
             <div className={`uptimeDot uptimeDot-${day.status}`} />
             <div className='uptimeTooltip'>
               <div>{day.date}</div>
-              <div>{((day.actual / Math.max(day.expected, 1)) * 100).toFixed(1)}% oppetid</div>
+              <div>{t.uptimeDisplay.percentLine((day.actual / Math.max(day.expected, 1)) * 100)}</div>
             </div>
           </div>
         ))}
       </div>
       
       <div className='uptimeFooter'>
-        <span>For 30 dager siden</span>
-        <span>I dag</span>
+        <span>{t.uptimeDisplay.footerStart}</span>
+        <span>{t.uptimeDisplay.footerEnd}</span>
       </div>
     </div>
   )

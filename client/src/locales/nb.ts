@@ -38,6 +38,11 @@ export const language: Language = {
     estimated: 'Estimert',
     hourEstimate: (n: number) => `${n} time${n === 1 ? '' : 'r'}`,
   },
+  uptimeDisplay: {
+    percentLine: (pct: number) => `${pct.toFixed(1)}% oppetid`,
+    footerStart: 'For 30 dager siden',
+    footerEnd: 'I dag',
+  },
   exitModal: {
     line1: 'Er du sikker på at du vil trekke',
     line2: 'fra køen?',

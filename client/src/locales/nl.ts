@@ -38,6 +38,11 @@ export const language: Language = {
     estimated: 'Geschat',
     hourEstimate: (n: number) => `${n} uur${n === 1 ? '' : 'en'}`,
   },
+  uptimeDisplay: {
+    percentLine: (pct: number) => `${pct.toFixed(1)}% uptime`,
+    footerStart: '30 dagen geleden',
+    footerEnd: 'Vandaag',
+  },
   exitModal: {
     line1: 'Weet je zeker dat je',
     line2: 'uit de wachtrij wilt halen?',
